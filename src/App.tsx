@@ -1,3 +1,9 @@
+import { Button } from '@/components/ui/button'
+
 export default function App() {
-  return <h1 className="text-3xl font-bold text-purple-600">NFT Marketplace</h1>
+  return (
+    <div className="p-4">
+      <Button>Comprar</Button>
+    </div>
+  )
 }
