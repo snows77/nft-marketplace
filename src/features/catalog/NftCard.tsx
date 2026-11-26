@@ -11,7 +11,8 @@ export function NftCard({ nft, priority = false }: { nft: NftSummary; priority?:
         <img
           src={nft.image}
           srcSet={srcSetFor(nft.image)}
-          sizes="(min-width: 1024px) 260px, 45vw"
+          // Larguras medidas do card: 3 colunas no desktop, 2 no tablet/celular
+          sizes="(min-width: 1024px) 380px, (min-width: 768px) 350px, calc(50vw - 48px)"
           alt={title}
           width={400}
           height={400}
