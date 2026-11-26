@@ -1,6 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { LogIn, Search, ShoppingCart } from 'lucide-react'
 import { notifyUnavailable } from '@/lib/unavailable'
+import { useSession } from '@/features/auth/session'
+import { UserMenu } from '@/features/auth/UserMenu'
 import { Container } from './Container'
 
 const navItem =
@@ -10,6 +12,8 @@ const activeItem =
 
 // Cabeçalho do desktop/tablet. No mobile a navegação fica na barra inferior.
 export function SiteHeader() {
+  const { user, isPending } = useSession()
+
   return (
     <header className="hidden md:block">
       <Container className="flex items-center justify-between border-b border-border">
@@ -55,13 +59,21 @@ export function SiteHeader() {
           <a href="/carrinho" aria-label="Carrinho" className="rounded p-1 hover:text-primary">
             <ShoppingCart className="size-6" aria-hidden="true" />
           </a>
-          <a
-            href="/entrar"
-            className="inline-flex items-center gap-1.5 rounded bg-primary px-2.5 py-1.5 text-body font-bold text-primary-foreground hover:bg-primary-light"
-          >
-            <LogIn className="size-5" aria-hidden="true" />
-            Entrar
-          </a>
+          {isPending ? (
+            // Reserva o espaço enquanto a sessão carrega, sem "piscar" o botão Entrar
+            <span className="h-9 w-24" aria-hidden="true" />
+          ) : user ? (
+            <UserMenu user={user} />
+          ) : (
+            <Link
+              to="."
+              search={(prev) => ({ ...prev, auth: 'entrar' as const })}
+              className="inline-flex items-center gap-1.5 rounded bg-primary px-2.5 py-1.5 text-body font-bold text-primary-foreground hover:bg-primary-light"
+            >
+              <LogIn className="size-5" aria-hidden="true" />
+              Entrar
+            </Link>
+          )}
         </div>
       </Container>
     </header>

@@ -7,8 +7,21 @@ import { routeTree } from './routeTree.gen'
 import '@fontsource-variable/roboto-mono'
 import './index.css'
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Só repete falhas transitórias (rede, timeout, 5xx), no máximo 2 vezes
+      retry: (failureCount, error) => isTransient(error) && failureCount < 2,
+      retryDelay: 300,
+    },
+    mutations: { retry: false },
+  },
+})
+
 const router = createRouter({
   routeTree,
+  // Rotas acessam o cache (ex.: checar a sessão antes de abrir uma página privada)
+  context: { queryClient },
   // Tudo na URL é string; quem converte é o schema Zod de cada rota
   parseSearch: (searchStr) => Object.fromEntries(new URLSearchParams(searchStr)),
   stringifySearch: (search) => {
@@ -28,17 +41,6 @@ declare module '@tanstack/react-router' {
     router: typeof router
   }
 }
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      // Só repete falhas transitórias (rede, timeout, 5xx), no máximo 2 vezes
-      retry: (failureCount, error) => isTransient(error) && failureCount < 2,
-      retryDelay: 300,
-    },
-    mutations: { retry: false },
-  },
-})
 
 // Liga a API simulada (MSW) e devolve o painel de cenários, quando configurado
 async function enableMocks(): Promise<ComponentType | null> {

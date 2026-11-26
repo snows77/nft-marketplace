@@ -1,11 +1,26 @@
-import { createRootRoute, Outlet } from '@tanstack/react-router'
+import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
+import type { QueryClient } from '@tanstack/react-query'
+import { z } from 'zod'
 import { Toaster } from '@/components/ui/sonner'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { MobileTabBar } from '@/components/layout/MobileTabBar'
 import { NotFound } from '@/components/layout/NotFound'
+import { AuthDialog } from '@/features/auth/AuthDialog'
 
-export const Route = createRootRoute({
+export interface RouterContext {
+  queryClient: QueryClient
+}
+
+// Parâmetros válidos em qualquer página: abrem o modal de login/cadastro
+// e dizem para onde voltar depois de entrar
+const rootSearchSchema = z.object({
+  auth: z.enum(['entrar', 'cadastro']).optional().catch(undefined),
+  redirect: z.string().optional().catch(undefined),
+})
+
+export const Route = createRootRouteWithContext<RouterContext>()({
+  validateSearch: rootSearchSchema,
   component: RootLayout,
   notFoundComponent: NotFound,
 })
@@ -26,6 +41,7 @@ function RootLayout() {
       </main>
       <SiteFooter />
       <MobileTabBar />
+      <AuthDialog />
       <Toaster position="bottom-center" />
     </>
   )
