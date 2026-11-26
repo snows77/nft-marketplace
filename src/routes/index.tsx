@@ -5,6 +5,8 @@ import { fetchNfts } from '@/api/nfts'
 import { nftKeys } from '@/api/queryKeys'
 import { nftSearchSchema, type NftSearch } from '@/contracts/nft-search'
 import { Button } from '@/components/ui/button'
+import { NftGrid, NftGridSkeleton } from '@/features/catalog/NftGrid'
+import { Pagination } from '@/features/catalog/Pagination'
 
 export const Route = createFileRoute('/')({
   validateSearch: (search) => nftSearchSchema.parse(search),
@@ -84,17 +86,18 @@ function Home() {
         </select>
       </div>
 
-      {isPending && <p>Carregando...</p>}
+      {isPending && <NftGridSkeleton />}
 
       {isError && (
-        <p>
-          Erro ao carregar. <Button onClick={() => refetch()}>Tentar de novo</Button>
-        </p>
+        <div role="alert" className="space-y-2">
+          <p>Não foi possível carregar os NFTs.</p>
+          <Button onClick={() => refetch()}>Tentar de novo</Button>
+        </div>
       )}
 
       {data && (
         <>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground" aria-live="polite">
             {data.total} NFTs, página {data.page} de {data.totalPages}
             {isFetching && ' (atualizando...)'}
           </p>
@@ -102,31 +105,10 @@ function Home() {
           {data.items.length === 0 ? (
             <p>Nenhum NFT encontrado.</p>
           ) : (
-            <ul className="space-y-1">
-              {data.items.map((nft) => (
-                <li key={nft.id}>
-                  {nft.name} #{String(nft.tokenNumber).padStart(3, '0')}: {nft.priceEth} ETH
-                </li>
-              ))}
-            </ul>
+            <NftGrid items={data.items} />
           )}
 
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              disabled={search.page <= 1}
-              onClick={() => goToPage(search.page - 1)}
-            >
-              Anterior
-            </Button>
-            <Button
-              variant="outline"
-              disabled={search.page >= data.totalPages}
-              onClick={() => goToPage(search.page + 1)}
-            >
-              Próxima
-            </Button>
-          </div>
+          <Pagination page={search.page} totalPages={data.totalPages} onChange={goToPage} />
         </>
       )}
     </main>
