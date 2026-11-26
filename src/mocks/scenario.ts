@@ -28,6 +28,7 @@ export interface KurioMocks {
   applyPreset: (name: PresetName) => void
   failNext: (method: string, path: string, kind: FailureKind, times?: number) => void
   reset: () => void
+  expireSession: () => void
 }
 
 declare global {

@@ -1,6 +1,7 @@
 import { useId, useState, useSyncExternalStore } from 'react'
 import { FlaskConical, X } from 'lucide-react'
 import { resetDemo } from './control'
+import { expireAllSessions } from './db'
 import {
   applyPreset,
   getScenario,
@@ -95,6 +96,9 @@ export function MockPanel() {
                 Falhas pendentes: {scenario.failures.length}
               </p>
             )}
+            <button type="button" className={actionClass} onClick={expireAllSessions}>
+              Expirar sessão agora
+            </button>
             <button
               type="button"
               className={`${actionClass} border-destructive/60 text-destructive`}

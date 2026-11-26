@@ -1,4 +1,4 @@
-import { resetDb, STORAGE_KEY as MOCK_DB_KEY } from './db'
+import { expireAllSessions, resetDb, STORAGE_KEY as MOCK_DB_KEY } from './db'
 import { applyPreset, getScenario, resetScenario, setScenario } from './scenario'
 
 // Volta tudo a um estado conhecido: dados da demo, cenário e qualquer dado local do app
@@ -27,5 +27,6 @@ export function installMockControl(): void {
     failNext: (method, path, kind, times = 1) =>
       setScenario({ failures: [...getScenario().failures, { method, path, kind, times }] }),
     reset: resetDemo,
+    expireSession: expireAllSessions,
   }
 }
