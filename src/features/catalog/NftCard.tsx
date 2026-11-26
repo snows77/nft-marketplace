@@ -1,5 +1,6 @@
 import type { NftSummary } from '@/contracts/nft'
 import { formatEth, formatTokenNumber } from '@/lib/format'
+import { srcSetFor } from '@/lib/images'
 
 export function NftCard({ nft, priority = false }: { nft: NftSummary; priority?: boolean }) {
   const title = `${nft.name} ${formatTokenNumber(nft.tokenNumber)}`
@@ -9,6 +10,8 @@ export function NftCard({ nft, priority = false }: { nft: NftSummary; priority?:
       <div className="relative aspect-square overflow-hidden rounded-2xl">
         <img
           src={nft.image}
+          srcSet={srcSetFor(nft.image)}
+          sizes="(min-width: 1024px) 260px, 45vw"
           alt={title}
           width={400}
           height={400}
