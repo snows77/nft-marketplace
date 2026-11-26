@@ -39,19 +39,17 @@ export function useSession() {
   return { user: data?.user ?? null, isPending }
 }
 
-// Troca de usuário: nada do cache anterior pode sobrar (dados privados).
-// resetQueries (e não clear) descarta os dados mas mantém as queries ligadas aos
-// componentes na tela, que recarregam já com a nova sessão.
-export function switchSession(queryClient: QueryClient, session: Session | null): Promise<void> {
+// Troca a sessão atual. O descarte dos dados privados do usuário anterior é feito
+// pelo guarda de sessão (guards.ts), que observa qualquer mudança de identidade.
+export function switchSession(queryClient: QueryClient, session: Session | null): void {
   setToken(session?.token ?? null)
   queryClient.setQueryData(sessionKey, session)
-  return queryClient.resetQueries({ predicate: (query) => query.queryKey[0] !== sessionKey[0] })
 }
 
 function useStartSession() {
   const queryClient = useQueryClient()
   return (session: Session) => {
-    void switchSession(queryClient, session)
+    switchSession(queryClient, session)
     toast.success(`Olá, ${session.user.username}!`)
   }
 }
@@ -73,7 +71,7 @@ export function useLogout() {
     mutationFn: logout,
     // Mesmo se a API falhar, a sessão local é encerrada
     onSettled: () => {
-      void switchSession(queryClient, null)
+      switchSession(queryClient, null)
       toast('Você saiu da sua conta.')
       navigate({ to: '/' })
     },

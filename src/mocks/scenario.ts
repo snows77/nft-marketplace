@@ -31,9 +31,15 @@ export interface KurioMocks {
   expireSession: () => void
 }
 
+// Inspeção do cache do TanStack Query, usada nos testes de isolamento entre usuários
+export interface KurioDebug {
+  cachedQueryKeys: () => readonly (readonly unknown[])[]
+}
+
 declare global {
   interface Window {
     __kurioMocks?: KurioMocks
+    __kurioDebug?: KurioDebug
   }
 }
 

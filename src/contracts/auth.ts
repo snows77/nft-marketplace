@@ -39,3 +39,7 @@ export type User = z.infer<typeof userSchema>
 export type Session = z.infer<typeof sessionSchema>
 export type LoginInput = z.infer<typeof loginInputSchema>
 export type RegisterInput = z.infer<typeof registerInputSchema>
+
+// Perfil do colecionador (GET /api/profile). Ganha mais campos no pedaço de Perfil.
+export const profileSchema = userSchema
+export type Profile = z.infer<typeof profileSchema>

@@ -1,5 +1,5 @@
 // Token da sessão guardado no navegador para a sessão sobreviver ao refresh
-const TOKEN_KEY = 'kurio:session-token'
+export const TOKEN_KEY = 'kurio:session-token'
 
 export function getToken(): string | null {
   try {

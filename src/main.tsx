@@ -1,6 +1,7 @@
 import { StrictMode, type ComponentType } from 'react'
 import { isTransient } from './api/errors'
 import { installSessionExpiryHandler } from './features/auth/expiration'
+import { installSessionGuards } from './features/auth/guards'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -45,6 +46,8 @@ declare module '@tanstack/react-router' {
 
 // Sessão expirada em qualquer chamada: avisa, limpa os dados privados e abre o login
 installSessionExpiryHandler(router, queryClient)
+// Troca de identidade (inclusive vinda de outra aba) descarta os dados do usuário anterior
+installSessionGuards(router, queryClient)
 
 // Liga a API simulada (MSW) e devolve o painel de cenários, quando configurado
 async function enableMocks(): Promise<ComponentType | null> {
@@ -57,6 +60,15 @@ async function enableMocks(): Promise<ComponentType | null> {
   // Imagens, fontes etc. não têm handler: seguem direto para a rede
   await worker.start({ onUnhandledFrame: 'bypass', quiet: true })
   installMockControl()
+  // Inspeção do cache para os testes de isolamento entre usuários (só na demo com mocks)
+  window.__kurioDebug = {
+    cachedQueryKeys: () =>
+      queryClient
+        .getQueryCache()
+        .getAll()
+        .filter((query) => query.state.data !== undefined)
+        .map((query) => query.queryKey),
+  }
   return MockPanel
 }
 

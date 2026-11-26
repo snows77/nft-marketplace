@@ -28,8 +28,15 @@ export function MockPanel() {
   const scenario = useSyncExternalStore(subscribeScenario, getScenario)
   const [open, setOpen] = useState(false)
   const panelId = useId()
-  const isDefault =
-    scenario.preset === 'padrao' && scenario.latency === 'normal' && scenario.failures.length === 0
+  const preset = PRESETS[scenario.preset].scenario
+  // Igual a um preset só se latência e falhas baterem; senão é "personalizado"
+  const matchesPreset =
+    preset.latency === scenario.latency &&
+    JSON.stringify(preset.failures) === JSON.stringify(scenario.failures)
+  const isDefault = scenario.preset === 'padrao' && matchesPreset
+  const badge = matchesPreset
+    ? scenario.preset
+    : `personalizado${scenario.failures.length ? ` · ${scenario.failures.length} falha(s)` : ''}`
 
   return (
     <div className="fixed bottom-28 left-3 z-50 md:bottom-4">
@@ -119,7 +126,7 @@ export function MockPanel() {
       >
         <FlaskConical className="size-3.5" aria-hidden="true" />
         Cenários
-        {!isDefault && <span className="rounded bg-primary px-1 text-primary-foreground">: {scenario.preset}</span>}
+        {!isDefault && <span className="rounded bg-primary px-1 text-primary-foreground">: {badge}</span>}
       </button>
     </div>
   )

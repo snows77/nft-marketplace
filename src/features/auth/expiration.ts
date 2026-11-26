@@ -3,21 +3,14 @@ import type { AnyRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { api } from '@/api/client'
 import { ApiRequestError } from '@/api/errors'
-import { getToken } from '@/api/token'
-import { switchSession } from './session'
+import type { Session } from '@/contracts/auth'
+import { isPrivateRoute } from './guards'
+import { sessionKey, switchSession } from './session'
 
-let notifiedToken: string | null = null
-
-// Avisa uma única vez por sessão expirada (várias requisições podem falhar juntas)
+// O id fixo faz o sonner reaproveitar o mesmo aviso: várias requisições falhando
+// juntas mostram uma mensagem só
 export function notifySessionExpired(): void {
-  const token = getToken()
-  if (token && token === notifiedToken) return
-  notifiedToken = token
-  toast.warning('Sua sessão expirou. Entre novamente.')
-}
-
-function isPrivateRoute(router: AnyRouter): boolean {
-  return router.state.matches.some((match) => match.routeId.startsWith('/_privado'))
+  toast.warning('Sua sessão expirou. Entre novamente.', { id: 'sessao-expirada' })
 }
 
 // Qualquer chamada recusada com SESSION_EXPIRED encerra a sessão local, avisa e abre o
@@ -31,8 +24,9 @@ export function installSessionExpiryHandler(router: AnyRouter, queryClient: Quer
     notifySessionExpired()
 
     const isSessionCheck = error.requestUrl?.startsWith('/auth/') ?? false
-    if (!isSessionCheck) {
-      void switchSession(queryClient, null)
+    const alreadyEnded = queryClient.getQueryData<Session | null>(sessionKey) == null
+    if (!isSessionCheck && !alreadyEnded) {
+      switchSession(queryClient, null)
       const { href } = router.state.location
       if (isPrivateRoute(router)) {
         void router.navigate({ to: '/', search: { auth: 'entrar', redirect: href } })

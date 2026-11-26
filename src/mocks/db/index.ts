@@ -34,6 +34,12 @@ function load(): MockDbState {
 
 let state: MockDbState = load()
 
+// Cada aba tem sua cópia em memória; quando outra aba grava o banco (ex.: login),
+// esta recarrega, como se todas falassem com o mesmo servidor
+window.addEventListener('storage', (event) => {
+  if (event.key === STORAGE_KEY) state = load()
+})
+
 export function getDb(): MockDbState {
   return state
 }

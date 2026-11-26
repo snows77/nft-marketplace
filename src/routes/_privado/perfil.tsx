@@ -1,9 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { Container } from '@/components/layout/Container'
+import { fetchProfile } from '@/api/profile'
+import { profileKeys } from '@/api/queryKeys'
 import { useSession, useLogout } from '@/features/auth/session'
 
-// PROVISÓRIA: mostra os dados da sessão para validar a proteção de rotas.
-// A tela completa de perfil (edição, avatar, senha) vem no pedaço 8.
+// PROVISÓRIA: mostra o perfil vindo da API para validar a proteção de rotas e o
+// isolamento por usuário. A tela completa (edição, avatar, senha) vem no pedaço 8.
 export const Route = createFileRoute('/_privado/perfil')({
   component: ProfilePage,
 })
@@ -11,21 +14,36 @@ export const Route = createFileRoute('/_privado/perfil')({
 function ProfilePage() {
   const { user } = useSession()
   const logout = useLogout()
-  if (!user) return null
+  const profile = useQuery({
+    queryKey: profileKeys.detail(user?.id ?? 'anonimo'),
+    queryFn: ({ signal }) => fetchProfile(signal),
+    enabled: !!user,
+  })
 
   return (
     <Container className="max-w-xl space-y-6 py-12">
       <h1 className="text-heading font-bold">Meu perfil</h1>
-      <dl className="space-y-3 rounded-lg bg-card p-6 text-body">
-        <div>
-          <dt className="text-caption text-muted-foreground">Nome de usuário</dt>
-          <dd>{user.username}</dd>
+      {profile.isPending && <div className="skeleton h-28 rounded-lg" role="status" aria-label="Carregando perfil" />}
+      {profile.isError && (
+        <div role="alert" className="space-y-2">
+          <p>Não foi possível carregar seu perfil.</p>
+          <button type="button" className="text-primary underline" onClick={() => profile.refetch()}>
+            Tentar de novo
+          </button>
         </div>
-        <div>
-          <dt className="text-caption text-muted-foreground">E-mail</dt>
-          <dd>{user.email}</dd>
-        </div>
-      </dl>
+      )}
+      {profile.data && (
+        <dl className="space-y-3 rounded-lg bg-card p-6 text-body">
+          <div>
+            <dt className="text-caption text-muted-foreground">Nome de usuário</dt>
+            <dd>{profile.data.username}</dd>
+          </div>
+          <div>
+            <dt className="text-caption text-muted-foreground">E-mail</dt>
+            <dd>{profile.data.email}</dd>
+          </div>
+        </dl>
+      )}
       <button
         type="button"
         onClick={() => logout.mutate()}
