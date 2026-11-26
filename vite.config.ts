@@ -16,5 +16,11 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src')
     },
   },
-})  
+  // O code splitting do TanStack Router esconde imports do scanner do Vite. Sem esta lista,
+  // essas libs são descobertas depois, pré-empacotadas numa segunda rodada com outra cópia
+  // do React, e os hooks quebram ("Cannot read properties of null (reading 'useContext')").
+  optimizeDeps: {
+    include: ['lucide-react', 'sonner', 'radix-ui', 'class-variance-authority', 'cn'],
+  },
+})
 

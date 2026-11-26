@@ -1,15 +1,22 @@
 import { useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, stripSearchParams } from '@tanstack/react-router'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { fetchNfts } from '@/api/nfts'
 import { nftKeys } from '@/api/queryKeys'
 import { nftSearchSchema, type NftSearch } from '@/contracts/nft-search'
 import { Button } from '@/components/ui/button'
+import { Container } from '@/components/layout/Container'
 import { NftGrid, NftGridSkeleton } from '@/features/catalog/NftGrid'
 import { Pagination } from '@/features/catalog/Pagination'
 
 export const Route = createFileRoute('/')({
-  validateSearch: (search) => nftSearchSchema.parse(search),
+  // Passar o schema direto (Standard Schema) faz o TanStack usar o tipo de *entrada*
+  // nos <Link>, onde tab/sort/page são opcionais, e o de *saída* no useSearch.
+  validateSearch: nftSearchSchema,
+  // Valores padrão não aparecem na URL: "/" em vez de "/?tab=all&sort=recent&page=1"
+  search: {
+    middlewares: [stripSearchParams({ tab: 'all', sort: 'recent', page: 1 })],
+  },
   component: Home,
 })
 
@@ -34,7 +41,8 @@ function Home() {
   }
 
   return (
-    <main className="space-y-4 p-4">
+    <Container>
+    <section id="catalogo" aria-label="Catálogo" className="space-y-4 py-6">
       <form
         className="flex gap-2"
         onSubmit={(e) => {
@@ -111,6 +119,7 @@ function Home() {
           <Pagination page={search.page} totalPages={data.totalPages} onChange={goToPage} />
         </>
       )}
-    </main>
+    </section>
+    </Container>
   )
 }

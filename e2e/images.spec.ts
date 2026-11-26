@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 test('as imagens dos cards carregam', async ({ page }) => {
   await page.goto('/')
-  const img = page.getByRole('list').first().getByRole('img').first()
+  const img = page.getByRole('region', { name: 'Catálogo' }).getByRole('img').first()
   await expect(img).toBeVisible()
 
   // naturalWidth > 0 só acontece se o arquivo foi baixado e decodificado
