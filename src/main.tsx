@@ -1,5 +1,6 @@
 import { StrictMode, type ComponentType } from 'react'
 import { isTransient } from './api/errors'
+import { installSessionExpiryHandler } from './features/auth/expiration'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -41,6 +42,9 @@ declare module '@tanstack/react-router' {
     router: typeof router
   }
 }
+
+// Sessão expirada em qualquer chamada: avisa, limpa os dados privados e abre o login
+installSessionExpiryHandler(router, queryClient)
 
 // Liga a API simulada (MSW) e devolve o painel de cenários, quando configurado
 async function enableMocks(): Promise<ComponentType | null> {

@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { ChevronDown, LogOut, UserRound } from 'lucide-react'
 import {
   DropdownMenu,
@@ -20,11 +21,10 @@ export function UserMenu({ user }: { user: User }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-44">
         <DropdownMenuItem asChild>
-          {/* Rota criada na próxima tarefa; até lá cai na página 404 */}
-          <a href="/perfil">
+          <Link to="/perfil">
             <UserRound aria-hidden="true" />
             Meu perfil
-          </a>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => logout.mutate()} disabled={logout.isPending}>
           <LogOut aria-hidden="true" />

@@ -55,10 +55,9 @@ export function SiteFooter() {
             </h2>
             <ul className="space-y-2">
               <li>
-                {/* Rota criada no pedaço de Perfil; até lá cai na página 404 */}
-                <a href="/perfil" className={linkClass}>
+                <Link to="/perfil" className={linkClass}>
                   Meu perfil
-                </a>
+                </Link>
               </li>
               {['Minha coleção', 'Atividade', 'Estúdio do criador', 'Lista de interesse'].map((label) => (
                 <li key={label}>

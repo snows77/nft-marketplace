@@ -10,33 +10,49 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PrivadoRouteImport } from './routes/_privado'
+import { Route as PrivadoPerfilRouteImport } from './routes/_privado/perfil'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivadoRoute = PrivadoRouteImport.update({
+  id: '/_privado',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivadoPerfilRoute = PrivadoPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => PrivadoRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/perfil': typeof PrivadoPerfilRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/perfil': typeof PrivadoPerfilRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_privado': typeof PrivadoRouteWithChildren
+  '/_privado/perfil': typeof PrivadoPerfilRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/perfil'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/perfil'
+  id: '__root__' | '/' | '/_privado' | '/_privado/perfil'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PrivadoRoute: typeof PrivadoRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +64,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_privado': {
+      id: '/_privado'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PrivadoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_privado/perfil': {
+      id: '/_privado/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PrivadoPerfilRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
   }
 }
 
+interface PrivadoRouteChildren {
+  PrivadoPerfilRoute: typeof PrivadoPerfilRoute
+}
+
+const PrivadoRouteChildren: PrivadoRouteChildren = {
+  PrivadoPerfilRoute: PrivadoPerfilRoute,
+}
+
+const PrivadoRouteWithChildren =
+  PrivadoRoute._addFileChildren(PrivadoRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PrivadoRoute: PrivadoRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

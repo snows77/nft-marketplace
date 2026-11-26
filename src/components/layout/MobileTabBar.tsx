@@ -45,9 +45,9 @@ export function MobileTabBar() {
           </a>
         </li>
         <li>
-          <a href="/perfil" aria-label="Perfil" className={item}>
+          <Link to="/perfil" aria-label="Perfil" className={item} activeProps={{ className: 'text-primary' }}>
             <User className="size-6" aria-hidden="true" />
-          </a>
+          </Link>
         </li>
       </ul>
     </nav>
