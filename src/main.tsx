@@ -6,7 +6,21 @@ import { routeTree } from './routeTree.gen'
 import '@fontsource-variable/roboto-mono'
 import './index.css'
 
-const router = createRouter({ routeTree })
+const router = createRouter({
+  routeTree,
+  // Tudo na URL é string; quem converte é o schema Zod de cada rota
+  parseSearch: (searchStr) => Object.fromEntries(new URLSearchParams(searchStr)),
+  stringifySearch: (search) => {
+    const params = new URLSearchParams()
+    for (const [key, value] of Object.entries(search)) {
+      if (value !== undefined && value !== null && value !== '') {
+        params.set(key, String(value))
+      }
+    }
+    const result = params.toString()
+    return result ? `?${result}` : ''
+  },
+})
 
 declare module '@tanstack/react-router' {
   interface Register {
