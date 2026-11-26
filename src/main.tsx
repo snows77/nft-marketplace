@@ -1,4 +1,5 @@
-import { StrictMode } from 'react'
+import { StrictMode, type ComponentType } from 'react'
+import { isTransient } from './api/errors'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -28,19 +29,37 @@ declare module '@tanstack/react-router' {
   }
 }
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Só repete falhas transitórias (rede, timeout, 5xx), no máximo 2 vezes
+      retry: (failureCount, error) => isTransient(error) && failureCount < 2,
+      retryDelay: 300,
+    },
+    mutations: { retry: false },
+  },
+})
 
-async function enableMocks() {
-  if (import.meta.env.VITE_ENABLE_MOCKS !== 'true') return
-  const { worker } = await import('./mocks/browser')
-  await worker.start()
+// Liga a API simulada (MSW) e devolve o painel de cenários, quando configurado
+async function enableMocks(): Promise<ComponentType | null> {
+  if (import.meta.env.VITE_ENABLE_MOCKS !== 'true') return null
+  const [{ worker }, { installMockControl }, { MockPanel }] = await Promise.all([
+    import('./mocks/browser'),
+    import('./mocks/control'),
+    import('./mocks/MockPanel'),
+  ])
+  // Imagens, fontes etc. não têm handler: seguem direto para a rede
+  await worker.start({ onUnhandledFrame: 'bypass', quiet: true })
+  installMockControl()
+  return MockPanel
 }
 
-enableMocks().then(() => {
+enableMocks().then((MockPanel) => {
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
+        {MockPanel && <MockPanel />}
       </QueryClientProvider>
     </StrictMode>,
   )

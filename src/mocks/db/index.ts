@@ -3,7 +3,7 @@ import { buildNfts } from './fixtures/nfts'
 
 // Troque o número da versão sempre que mudar as fixtures,
 // senão o navegador continua usando os dados antigos salvos.
-const STORAGE_KEY = 'kurio:mock-db:v1'
+export const STORAGE_KEY = 'kurio:mock-db:v2'
 
 interface MockDbState {
   nfts: Nft[]
