@@ -117,6 +117,20 @@ export const nftHandlers = [
     return HttpResponse.json(body)
   }),
 
+  // "Mais desta coleção": até 5 NFTs da mesma coleção, sem o próprio
+  http.get('/api/nfts/:id/related', ({ params }) => {
+    const nfts = getDb().nfts
+    const nft = nfts.find((n) => n.id === params.id)
+    if (!nft) {
+      return HttpResponse.json({ code: 'NOT_FOUND', message: 'NFT não encontrado' }, { status: 404 })
+    }
+    const items = nfts
+      .filter((n) => n.collection === nft.collection && n.id !== nft.id)
+      .slice(0, 5)
+      .map((n) => nftSummarySchema.parse(n))
+    return HttpResponse.json(items)
+  }),
+
   http.get('/api/nfts/:id', ({ params }) => {
     const nft = getDb().nfts.find((n) => n.id === params.id)
     if (!nft) {

@@ -28,6 +28,14 @@ const COLLECTIONS = ['Kurio Apes', 'Kurio Nomads', 'Kurio Echoes']
 const CREATORS = ['Nova Sato', 'Iris Bell', 'Teo Marques', 'Lia Okafor']
 const ATTRIBUTES = ['Óculos', 'Esmeralda', 'Chapéu', 'Fones', 'Jaqueta', 'Capuz']
 
+const REVIEWS = [
+  { author: 'marina.eth', rating: 5, comment: 'Acabamento impecável. Os detalhes aparecem ainda melhor em alta resolução.' },
+  { author: 'colecionador_rj', rating: 5, comment: 'Procedência clara e entrega instantânea na carteira. Recomendo.' },
+  { author: 'pixelnomade', rating: 4, comment: 'Arte linda; só queria que a edição aberta tivesse mais tempo de cunhagem.' },
+  { author: 'dani.art', rating: 5, comment: 'Uma das peças mais bonitas da coleção. O criador é muito atencioso.' },
+  { author: 'teo_web3', rating: 4, comment: 'Ótimo custo-benefício para quem está começando a colecionar.' },
+]
+
 const img = (key: string) => `/images/nfts/${key}.webp`
 
 // Centavos de ETH -> "1.19". Aritmética inteira, sem float.
@@ -100,7 +108,8 @@ export function buildNfts(): Nft[] {
         `Cada atributo fica armazenado nos metadados do token e verificado na ${NETWORK_LABEL[network]}.\n\n` +
         `A propriedade inclui a arte em alta resolução, lançamentos exclusivos para colecionadores e um registro permanente de procedência. ` +
         `${creator} recebe 5% de direitos autorais nas vendas secundárias.`,
-      gallery: Array.from({ length: 4 }, () => imageUrl),
+      // Primeira imagem é a do card; as demais variam para a galeria fazer sentido
+      gallery: [imageUrl, ...IMAGE_KEYS.filter((key) => img(key) !== imageUrl).slice(0, 3).map(img)],
       attributes: [ATTRIBUTES[i % ATTRIBUTES.length], ATTRIBUTES[(i + 2) % ATTRIBUTES.length], RARITY_LABEL[rarity]],
       editions: [
         { id: `${id}-1of1`, label: '1/1', supply: 1, available: i % 7 === 0 ? 0 : 1 },
@@ -110,6 +119,10 @@ export function buildNfts(): Nft[] {
       ],
       rating: 4.8 - ((i * 3) % 14) / 10,
       reviewCount: 19 + ((i * 11) % 80),
+      reviews: Array.from({ length: 3 }, (_, r) => {
+        const review = REVIEWS[(i + r) % REVIEWS.length]
+        return { id: `${id}-review-${r + 1}`, ...review, createdAt: new Date(Date.UTC(2026, 9, 20) - (i + r * 9) * 86_400_000).toISOString() }
+      }),
       royaltyPercent: 5,
       contractAddress: i === 0 ? '0x7A42...19E8' : `0x${hex4(i * 977)}...${hex4(i * 4129)}`,
       tokenStandard: 'ERC-721',

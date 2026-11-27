@@ -15,6 +15,15 @@ export const editionSchema = z.object({
   available: z.number().int().min(0),
 })
 
+// Avaliação de colecionador (amostra exibida na aba "Avaliações de colecionadores")
+export const reviewSchema = z.object({
+  id: z.string(),
+  author: z.string(),
+  rating: z.number().int().min(1).max(5),
+  comment: z.string(),
+  createdAt: z.string(), // ISO
+})
+
 // Dados do card (listagem, destaques, "mais desta coleção")
 export const nftSummarySchema = z.object({
   id: z.string(),
@@ -41,6 +50,7 @@ export const nftSchema = nftSummarySchema.extend({
   editions: z.array(editionSchema),
   rating: z.number().min(0).max(5),
   reviewCount: z.number().int(),
+  reviews: z.array(reviewSchema),          // amostra das mais recentes (reviewCount é o total)
   royaltyPercent: z.number(),
   contractAddress: z.string(),
   tokenStandard: z.string(),               // "ERC-721"
@@ -76,6 +86,7 @@ export const nftListResponseSchema = z.object({
 export type Nft = z.infer<typeof nftSchema>
 export type NftSummary = z.infer<typeof nftSummarySchema>
 export type NftEdition = z.infer<typeof editionSchema>
+export type NftReview = z.infer<typeof reviewSchema>
 export type NftListQuery = z.infer<typeof nftListQuerySchema>
 export type NftListResponse = z.infer<typeof nftListResponseSchema>
 // GET /api/nfts/featured: destaques do Início (hero e "NFT em destaque")
