@@ -32,7 +32,7 @@ Depois de cada `git pull` que mudar `package.json`/`package-lock.json`, rode `np
 | `npm run test:e2e` | Testes E2E Playwright (sobe o app sozinho na porta 5174) |
 | `npm run test:e2e:ui` | Testes no modo interativo |
 | `npx playwright show-report` | Relatório HTML do último teste (traces das falhas incluídos) |
-| `npm run lighthouse` | Auditoria Lighthouse do build (rode `npm run build` antes) |
+| `npm run lighthouse` | Auditoria Lighthouse do build (rode `npm run build` antes); resultado em [reports/lighthouse/summary.md](reports/lighthouse/summary.md) |
 | `npm run assets:figma` | Regera as imagens `.webp` a partir do SVG exportado do Figma |
 
 Testes contra outro endereço (build local ou a URL publicada): `E2E_BASE_URL=http://localhost:4173 npm run test:e2e`.

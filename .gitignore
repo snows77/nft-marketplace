@@ -28,6 +28,3 @@ playwright-report/
 test-results/
 blob-report/
 
-# Relatórios do Lighthouse: só o resumo vai para o Git (os HTML/JSON são gerados por npm run lighthouse)
-reports/lighthouse/*.html
-reports/lighthouse/*.json
