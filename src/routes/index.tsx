@@ -1,116 +1,61 @@
-import { useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { fetchNfts } from '@/api/nfts'
+import { createFileRoute, stripSearchParams } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
+import { fetchFeaturedNfts } from '@/api/nfts'
 import { nftKeys } from '@/api/queryKeys'
 import { nftSearchSchema, type NftSearch } from '@/contracts/nft-search'
-import { Button } from '@/components/ui/button'
-import { NftGrid, NftGridSkeleton } from '@/features/catalog/NftGrid'
-import { Pagination } from '@/features/catalog/Pagination'
+import { Container } from '@/components/layout/Container'
+import { Catalog } from '@/features/catalog/Catalog'
+import { BenefitsStrip } from '@/features/home/BenefitsStrip'
+import { FeaturedNft } from '@/features/home/FeaturedNft'
+import { HeroCarousel } from '@/features/home/HeroCarousel'
+import { MintJournal } from '@/features/home/MintJournal'
+import { PromoBanners } from '@/features/home/PromoBanners'
+import { useMediaQuery } from '@/lib/use-media-query'
 
 export const Route = createFileRoute('/')({
-  validateSearch: (search) => nftSearchSchema.parse(search),
+  // Passar o schema direto (Standard Schema) faz o TanStack usar o tipo de *entrada*
+  // nos <Link>, onde tab/sort/page são opcionais, e o de *saída* no useSearch.
+  validateSearch: nftSearchSchema,
+  // Valores padrão não aparecem na URL: "/" em vez de "/?tab=all&sort=recent&page=1"
+  search: {
+    middlewares: [stripSearchParams({ tab: 'all', sort: 'recent', page: 1 })],
+  },
   component: Home,
 })
 
 function Home() {
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
-  const [text, setText] = useState(search.q ?? '')
-
-  const { data, isPending, isError, isFetching, refetch } = useQuery({
-    queryKey: nftKeys.list(search),
-    queryFn: ({ signal }) => fetchNfts(search, signal),
-    placeholderData: keepPreviousData, // mantém a lista anterior durante a troca
+  const isDesktop = useMediaQuery('(min-width: 1024px)')
+  const featured = useQuery({
+    queryKey: nftKeys.featured,
+    queryFn: ({ signal }) => fetchFeaturedNfts(signal),
+    staleTime: 5 * 60_000, // destaques mudam pouco
   })
 
-  // Qualquer mudança de filtro volta para a página 1
-  function updateFilters(changes: Partial<NftSearch>) {
+  // Qualquer mudança de filtro, busca, aba ou ordem volta para a página 1
+  function onFilter(changes: Partial<NftSearch>) {
     navigate({ search: (prev) => ({ ...prev, ...changes, page: 1 }) })
   }
 
-  function goToPage(page: number) {
+  function onPage(page: number) {
     navigate({ search: (prev) => ({ ...prev, page }) })
+    document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
-    <main className="space-y-4 p-4">
-      <form
-        className="flex gap-2"
-        onSubmit={(e) => {
-          e.preventDefault()
-          updateFilters({ q: text.trim() || undefined })
-        }}
-      >
-        <input
-          aria-label="Buscar"
-          className="rounded border bg-card px-2 py-1"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-        />
-        <Button type="submit">Buscar</Button>
-      </form>
-
-      <div className="flex flex-wrap gap-2">
-        {(['all', 'new', 'trending'] as const).map((tab) => (
-          <Button
-            key={tab}
-            variant={search.tab === tab ? 'default' : 'outline'}
-            onClick={() => updateFilters({ tab })}
-          >
-            {tab}
-          </Button>
-        ))}
-        <select
-          aria-label="Categoria"
-          className="rounded border bg-card px-2"
-          value={search.category ?? ''}
-          onChange={(e) =>
-            updateFilters({ category: (e.target.value || undefined) as NftSearch['category'] })
-          }
-        >
-          <option value="">todas</option>
-          <option value="musica">música</option>
-          <option value="jogos">jogos</option>
-          <option value="arte-3d">arte 3d</option>
-        </select>
-        <select
-          aria-label="Ordenar"
-          className="rounded border bg-card px-2"
-          value={search.sort}
-          onChange={(e) => updateFilters({ sort: e.target.value as NftSearch['sort'] })}
-        >
-          <option value="recent">recentes</option>
-          <option value="price-asc">preço ↑</option>
-          <option value="price-desc">preço ↓</option>
-        </select>
-      </div>
-
-      {isPending && <NftGridSkeleton />}
-
-      {isError && (
-        <div role="alert" className="space-y-2">
-          <p>Não foi possível carregar os NFTs.</p>
-          <Button onClick={() => refetch()}>Tentar de novo</Button>
-        </div>
-      )}
-
-      {data && (
-        <>
-          <p className="text-muted-foreground" aria-live="polite">
-            {data.total} NFTs, página {data.page} de {data.totalPages}
-            {isFetching && ' (atualizando...)'}
-          </p>
-
-          {data.items.length === 0 ? (
-            <p>Nenhum NFT encontrado.</p>
-          ) : (
-            <NftGrid items={data.items} />
-          )}
-
-          <Pagination page={search.page} totalPages={data.totalPages} onChange={goToPage} />
-        </>
-      )}
-    </main>
+    <Container>
+      <HeroCarousel items={featured.data} />
+      <Catalog
+        search={search}
+        onFilter={onFilter}
+        onPage={onPage}
+        // Só no desktop: no mobile a barra lateral não existe e a imagem seria baixada à toa
+        sidebarExtra={isDesktop ? <FeaturedNft nft={featured.data?.[1] ?? featured.data?.[0]} /> : null}
+      />
+      <PromoBanners />
+      <MintJournal />
+      <BenefitsStrip />
+    </Container>
   )
 }

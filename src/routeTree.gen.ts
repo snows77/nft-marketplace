@@ -10,33 +10,131 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PrivadoRouteImport } from './routes/_privado'
+import { Route as CarrinhoRouteImport } from './routes/carrinho'
+import { Route as PrivadoCarteirasRouteImport } from './routes/_privado/carteiras'
+import { Route as PrivadoCheckoutRouteImport } from './routes/_privado/checkout'
+import { Route as PrivadoFavoritosRouteImport } from './routes/_privado/favoritos'
+import { Route as PrivadoPerfilRouteImport } from './routes/_privado/perfil'
+import { Route as NftNftIdRouteImport } from './routes/nft.$nftId'
+import { Route as PrivadoPedidosOrderIdRouteImport } from './routes/_privado/pedidos.$orderId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivadoRoute = PrivadoRouteImport.update({
+  id: '/_privado',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarrinhoRoute = CarrinhoRouteImport.update({
+  id: '/carrinho',
+  path: '/carrinho',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivadoCarteirasRoute = PrivadoCarteirasRouteImport.update({
+  id: '/carteiras',
+  path: '/carteiras',
+  getParentRoute: () => PrivadoRoute,
+} as any)
+const PrivadoCheckoutRoute = PrivadoCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => PrivadoRoute,
+} as any)
+const PrivadoFavoritosRoute = PrivadoFavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
+  getParentRoute: () => PrivadoRoute,
+} as any)
+const PrivadoPerfilRoute = PrivadoPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => PrivadoRoute,
+} as any)
+const NftNftIdRoute = NftNftIdRouteImport.update({
+  id: '/nft/$nftId',
+  path: '/nft/$nftId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivadoPedidosOrderIdRoute = PrivadoPedidosOrderIdRouteImport.update({
+  id: '/pedidos/$orderId',
+  path: '/pedidos/$orderId',
+  getParentRoute: () => PrivadoRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/carrinho': typeof CarrinhoRoute
+  '/carteiras': typeof PrivadoCarteirasRoute
+  '/checkout': typeof PrivadoCheckoutRoute
+  '/favoritos': typeof PrivadoFavoritosRoute
+  '/perfil': typeof PrivadoPerfilRoute
+  '/nft/$nftId': typeof NftNftIdRoute
+  '/pedidos/$orderId': typeof PrivadoPedidosOrderIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/carrinho': typeof CarrinhoRoute
+  '/carteiras': typeof PrivadoCarteirasRoute
+  '/checkout': typeof PrivadoCheckoutRoute
+  '/favoritos': typeof PrivadoFavoritosRoute
+  '/perfil': typeof PrivadoPerfilRoute
+  '/nft/$nftId': typeof NftNftIdRoute
+  '/pedidos/$orderId': typeof PrivadoPedidosOrderIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_privado': typeof PrivadoRouteWithChildren
+  '/carrinho': typeof CarrinhoRoute
+  '/_privado/carteiras': typeof PrivadoCarteirasRoute
+  '/_privado/checkout': typeof PrivadoCheckoutRoute
+  '/_privado/favoritos': typeof PrivadoFavoritosRoute
+  '/_privado/perfil': typeof PrivadoPerfilRoute
+  '/nft/$nftId': typeof NftNftIdRoute
+  '/_privado/pedidos/$orderId': typeof PrivadoPedidosOrderIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/carrinho'
+    | '/carteiras'
+    | '/checkout'
+    | '/favoritos'
+    | '/perfil'
+    | '/nft/$nftId'
+    | '/pedidos/$orderId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/carrinho'
+    | '/carteiras'
+    | '/checkout'
+    | '/favoritos'
+    | '/perfil'
+    | '/nft/$nftId'
+    | '/pedidos/$orderId'
+  id:
+    | '__root__'
+    | '/'
+    | '/_privado'
+    | '/carrinho'
+    | '/_privado/carteiras'
+    | '/_privado/checkout'
+    | '/_privado/favoritos'
+    | '/_privado/perfil'
+    | '/nft/$nftId'
+    | '/_privado/pedidos/$orderId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PrivadoRoute: typeof PrivadoRouteWithChildren
+  CarrinhoRoute: typeof CarrinhoRoute
+  NftNftIdRoute: typeof NftNftIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +146,89 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_privado': {
+      id: '/_privado'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PrivadoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/carrinho': {
+      id: '/carrinho'
+      path: '/carrinho'
+      fullPath: '/carrinho'
+      preLoaderRoute: typeof CarrinhoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_privado/carteiras': {
+      id: '/_privado/carteiras'
+      path: '/carteiras'
+      fullPath: '/carteiras'
+      preLoaderRoute: typeof PrivadoCarteirasRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
+    '/_privado/checkout': {
+      id: '/_privado/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof PrivadoCheckoutRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
+    '/_privado/favoritos': {
+      id: '/_privado/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof PrivadoFavoritosRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
+    '/_privado/perfil': {
+      id: '/_privado/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PrivadoPerfilRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
+    '/nft/$nftId': {
+      id: '/nft/$nftId'
+      path: '/nft/$nftId'
+      fullPath: '/nft/$nftId'
+      preLoaderRoute: typeof NftNftIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_privado/pedidos/$orderId': {
+      id: '/_privado/pedidos/$orderId'
+      path: '/pedidos/$orderId'
+      fullPath: '/pedidos/$orderId'
+      preLoaderRoute: typeof PrivadoPedidosOrderIdRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
   }
 }
 
+interface PrivadoRouteChildren {
+  PrivadoCarteirasRoute: typeof PrivadoCarteirasRoute
+  PrivadoCheckoutRoute: typeof PrivadoCheckoutRoute
+  PrivadoFavoritosRoute: typeof PrivadoFavoritosRoute
+  PrivadoPerfilRoute: typeof PrivadoPerfilRoute
+  PrivadoPedidosOrderIdRoute: typeof PrivadoPedidosOrderIdRoute
+}
+
+const PrivadoRouteChildren: PrivadoRouteChildren = {
+  PrivadoCarteirasRoute: PrivadoCarteirasRoute,
+  PrivadoCheckoutRoute: PrivadoCheckoutRoute,
+  PrivadoFavoritosRoute: PrivadoFavoritosRoute,
+  PrivadoPerfilRoute: PrivadoPerfilRoute,
+  PrivadoPedidosOrderIdRoute: PrivadoPedidosOrderIdRoute,
+}
+
+const PrivadoRouteWithChildren =
+  PrivadoRoute._addFileChildren(PrivadoRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PrivadoRoute: PrivadoRouteWithChildren,
+  CarrinhoRoute: CarrinhoRoute,
+  NftNftIdRoute: NftNftIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

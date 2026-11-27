@@ -1,16 +1,38 @@
 import type { Nft } from '@/contracts/nft'
 import { buildNfts } from './fixtures/nfts'
+import { buildUsers, type DbUser } from './fixtures/users'
+import { buildWallets, type DbWallet } from './fixtures/wallets'
+import { buildCarts, type DbCart } from './fixtures/carts'
 
 // Troque o número da versão sempre que mudar as fixtures,
 // senão o navegador continua usando os dados antigos salvos.
-const STORAGE_KEY = 'kurio:mock-db:v1'
+export const STORAGE_KEY = 'kurio:mock-db:v7'
+
+export interface DbSession {
+  token: string
+  userId: string
+  expiresAt: string // ISO
+}
 
 interface MockDbState {
   nfts: Nft[]
+  users: DbUser[]
+  sessions: DbSession[]
+  wallets: DbWallet[]
+  carts: DbCart[]
+  // Favoritos por usuário: userId -> ids dos NFTs (mais recente primeiro)
+  favorites: Record<string, string[]>
 }
 
 function seed(): MockDbState {
-  return { nfts: buildNfts() }
+  return {
+    nfts: buildNfts(),
+    users: buildUsers(),
+    sessions: [],
+    wallets: buildWallets(),
+    carts: buildCarts(),
+    favorites: {},
+  }
 }
 
 function load(): MockDbState {
@@ -24,6 +46,12 @@ function load(): MockDbState {
 }
 
 let state: MockDbState = load()
+
+// Cada aba tem sua cópia em memória; quando outra aba grava o banco (ex.: login),
+// esta recarrega, como se todas falassem com o mesmo servidor
+window.addEventListener('storage', (event) => {
+  if (event.key === STORAGE_KEY) state = load()
+})
 
 export function getDb(): MockDbState {
   return state
@@ -39,5 +67,12 @@ export function saveDb(): void {
 
 export function resetDb(): void {
   state = seed()
+  saveDb()
+}
+
+// Simula o fim do prazo de todas as sessões abertas (cenário de expiração)
+export function expireAllSessions(): void {
+  const past = new Date(Date.now() - 1000).toISOString()
+  state.sessions = state.sessions.map((session) => ({ ...session, expiresAt: past }))
   saveDb()
 }
