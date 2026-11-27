@@ -6,6 +6,7 @@ import { ApiRequestError } from '@/api/errors'
 import { cartKeys } from '@/api/queryKeys'
 import { staleQuoteSchema, type Buyer, type Payment, type Quote } from '@/contracts/order'
 import type { WalletSlot } from '@/contracts/wallet'
+import { useSocketEvent } from '@/features/realtime/useSocketEvent'
 import { attemptFor, loadAttempt, saveAttempt } from './attempt'
 
 export type Connection = { state: 'desconectada' | 'conectando' | 'conectada' } | { state: 'erro'; message: string }
@@ -79,7 +80,22 @@ export function useCheckout(userId: string) {
     },
   })
 
-  // Acompanha o pedido enquanto estiver pendente (o evento order.updated também atualiza)
+  // Tempo real: um item da cotação em revisão mudou de preço ou disponibilidade. Avisa já;
+  // a API recusa a confirmação dessa cotação (PRICE_CHANGED) e devolve a nova.
+  useSocketEvent('nft.updated', (event) => {
+    if (!quote || orderId) return
+    const changed = quote.items.find((item) => {
+      if (item.nftId !== event.nftId) return false
+      const edition = event.editions.find((e) => e.id === item.editionId)
+      return item.unitPriceEth !== event.priceEth || (edition !== undefined && edition.available < item.quantity)
+    })
+    if (changed) {
+      setNotice(`O preço ou a disponibilidade de ${changed.name} mudou. Revise e confirme novamente.`)
+    }
+  })
+
+  // Acompanha o pedido enquanto estiver pendente. O evento order.updated atualiza o mesmo
+  // cache na hora (src/features/realtime/sync.ts); o polling fica como reserva.
   const order = useQuery({
     queryKey: orderKey(orderId),
     queryFn: ({ signal }) => fetchOrder(orderId!, signal),

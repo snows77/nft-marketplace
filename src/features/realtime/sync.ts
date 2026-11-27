@@ -47,6 +47,9 @@ function patchData(data: unknown, event: NftUpdatedEvent): unknown {
   return data
 }
 
+// NFTs da compra que o usuário acabou de confirmar (a liquidação emite nft.updated deles)
+const ownPurchases = new Set<string>()
+
 // Aviso acessível (o sonner anuncia em região aria-live) quando um item do carrinho mudou
 function notifyCart(queryClient: QueryClient, event: NftUpdatedEvent) {
   const items = queryClient
@@ -55,6 +58,8 @@ function notifyCart(queryClient: QueryClient, event: NftUpdatedEvent) {
     .filter((item) => item.nftId === event.nftId)
   const item = items[0]
   if (!item) return false
+  // A disponibilidade caiu por causa da compra do próprio usuário: não é novidade para ele
+  if (ownPurchases.has(event.nftId)) return true
 
   const soldOut = items.some((line) => {
     const edition = event.editions.find((e) => e.id === line.editionId)
@@ -90,6 +95,11 @@ export function installRealtimeSync(queryClient: QueryClient): () => void {
 
   const offOrder = subscribeEvent('order.updated', (event: OrderUpdatedEvent) => {
     const key = ['order', event.orderId]
+    if (event.status === 'confirmado') {
+      const items = queryClient.getQueryData<Order>(key)?.items ?? []
+      items.forEach((item) => ownPurchases.add(item.nftId))
+      setTimeout(() => items.forEach((item) => ownPurchases.delete(item.nftId)), 10_000)
+    }
     // Estado novo na hora; o restante (hash, recibo) vem do REST logo em seguida
     queryClient.setQueryData<Order>(key, (order) =>
       order ? { ...order, status: event.status, version: event.version, updatedAt: event.occurredAt } : order,
