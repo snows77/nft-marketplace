@@ -34,6 +34,8 @@ test.describe('layout', () => {
 
   test('rodapé visível e sem overflow horizontal', async ({ page }) => {
     await page.goto('/')
+    // Espera o catálogo carregar: antes disso a página ainda vai crescer
+    await expect(page.getByRole('list', { name: 'NFTs' })).toBeVisible()
     const footer = page.getByRole('contentinfo')
     await footer.scrollIntoViewIfNeeded()
     await expect(footer).toBeVisible()
