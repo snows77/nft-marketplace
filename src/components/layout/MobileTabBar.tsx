@@ -33,6 +33,7 @@ export function MobileTabBar() {
           <Link
             to="/"
             hash="catalogo"
+            activeOptions={{ exact: true, includeHash: true }}
             aria-label="Explorar catálogo"
             className="flex size-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-8 ring-background hover:bg-primary-light"
           >

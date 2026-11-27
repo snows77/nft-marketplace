@@ -64,3 +64,28 @@ test.describe('layout', () => {
     await expect(skipLink).toBeFocused()
   })
 })
+
+test.describe('acessibilidade da navegação', () => {
+  test('só um link é a página atual em cada navegação', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByRole('list', { name: 'NFTs' })).toBeVisible()
+    for (const name of ['Navegação principal', 'Navegação inferior']) {
+      const nav = page.getByRole('navigation', { name })
+      if (await nav.isVisible()) {
+        await expect(nav.locator('[aria-current="page"]')).toHaveCount(1)
+      }
+    }
+  })
+
+  test('aviso (toast) não cobre a barra inferior no mobile', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'barra inferior só existe no mobile')
+    await page.goto('/')
+    await expect(page.getByRole('list', { name: 'NFTs' })).toBeVisible()
+    await page.getByRole('button', { name: /Ler mais/ }).first().click()
+    const toast = page.getByText('Esta seção não faz parte da demonstração.')
+    await expect(toast).toBeVisible()
+    const toastBox = (await toast.boundingBox())!
+    const barBox = (await page.getByRole('navigation', { name: 'Navegação inferior' }).boundingBox())!
+    expect(toastBox.y + toastBox.height).toBeLessThanOrEqual(barBox.y)
+  })
+})

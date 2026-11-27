@@ -42,7 +42,8 @@ function RootLayout() {
       <SiteFooter />
       <MobileTabBar />
       <AuthDialog />
-      <Toaster position="bottom-center" />
+      {/* No mobile os avisos sobem acima da barra inferior fixa (72px + botão central) */}
+      <Toaster position="bottom-center" mobileOffset={{ bottom: 'calc(120px + env(safe-area-inset-bottom))' }} />
     </>
   )
 }

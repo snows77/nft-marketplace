@@ -34,7 +34,8 @@ export function SiteHeader() {
               </Link>
             </li>
             <li>
-              <Link to="/" hash="catalogo" className={navItem}>
+              {/* includeHash: só é "página atual" quando a URL tem #catalogo (senão disputa com Início) */}
+              <Link to="/" hash="catalogo" className={navItem} activeOptions={{ exact: true, includeHash: true }}>
                 Mercado
               </Link>
             </li>
@@ -52,7 +53,13 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-5">
-          <Link to="/" hash="catalogo" aria-label="Buscar NFTs" className="rounded p-1 hover:text-primary">
+          <Link
+            to="/"
+            hash="catalogo"
+            activeOptions={{ exact: true, includeHash: true }}
+            aria-label="Buscar NFTs"
+            className="rounded p-1 hover:text-primary"
+          >
             <Search className="size-6" aria-hidden="true" />
           </Link>
           {/* Rotas criadas nos próximos pedaços; até lá caem na página 404 */}

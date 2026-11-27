@@ -23,6 +23,12 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
     {
+      // 768px: ponto em que o cabeçalho aparece e a barra inferior some
+      name: 'tablet',
+      testMatch: /(layout|catalog|home)\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 }, hasTouch: true },
+    },
+    {
       name: 'mobile',
       use: {
         ...devices['Desktop Chrome'],

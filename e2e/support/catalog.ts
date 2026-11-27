@@ -6,9 +6,10 @@ export const resultSummary = (page: Page) => catalog(page).getByRole('status').f
 
 export const cardLinks = (page: Page) => catalog(page).getByRole('list', { name: 'NFTs' }).getByRole('link')
 
-// No mobile os filtros ficam numa gaveta; no desktop, na barra lateral
-export async function withFilters(page: Page, testInfo: TestInfo, action: (filters: ReturnType<Page['getByRole']>) => Promise<void>) {
-  if (testInfo.project.name === 'mobile') {
+// Abaixo de 1024px (celular e tablet) os filtros ficam numa gaveta; acima, na barra lateral
+export async function withFilters(page: Page, _testInfo: TestInfo, action: (filters: ReturnType<Page['getByRole']>) => Promise<void>) {
+  const sidebar = page.getByRole('complementary', { name: 'Filtros' })
+  if (!(await sidebar.isVisible())) {
     await page.getByRole('button', { name: /^Filtros/ }).click()
     const drawer = page.getByRole('dialog', { name: 'Filtros' })
     await expect(drawer).toBeVisible()
@@ -16,7 +17,7 @@ export async function withFilters(page: Page, testInfo: TestInfo, action: (filte
     await drawer.getByRole('button', { name: /^Ver \d+ resultados?$/ }).click()
     await expect(drawer).toBeHidden()
   } else {
-    await action(page.getByRole('complementary', { name: 'Filtros' }))
+    await action(sidebar)
   }
 }
 
