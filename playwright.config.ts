@@ -2,6 +2,9 @@ import { defineConfig, devices } from '@playwright/test'
 
 // E2E_PORT permite rodar duas cópias do projeto em paralelo (ex.: worktrees)
 const PORT = Number(process.env.E2E_PORT ?? 5174)
+// E2E_BASE_URL testa um app já no ar (build local com preview ou a URL publicada);
+// nesse caso o Playwright não sobe o servidor de desenvolvimento
+const EXTERNAL_URL = process.env.E2E_BASE_URL
 
 export default defineConfig({
   testDir: './e2e',
@@ -14,7 +17,7 @@ export default defineConfig({
   // renderização às vezes passava de 5s; em condição normal nada fica mais lento
   expect: { timeout: 10_000 },
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    baseURL: EXTERNAL_URL ?? `http://localhost:${PORT}`,
     trace: 'retain-on-failure',
   },
   projects: [
@@ -39,9 +42,11 @@ export default defineConfig({
     },
   ],
   // Sobe o app com os mocks (MSW) ligados, numa porta só dos testes
-  webServer: {
-    command: `npm run dev -- --port ${PORT} --strictPort`,
-    url: `http://localhost:${PORT}`,
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: EXTERNAL_URL
+    ? undefined
+    : {
+        command: `npm run dev -- --port ${PORT} --strictPort`,
+        url: `http://localhost:${PORT}`,
+        reuseExistingServer: !process.env.CI,
+      },
 })
