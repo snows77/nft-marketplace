@@ -113,7 +113,11 @@ test('senhas nunca ficam em claro no banco simulado', async ({ page }) => {
     password: 'Segredo123',
     confirmPassword: 'Segredo123',
   })
-  const stored = await page.evaluate(() => localStorage.getItem('kurio:mock-db:v2') ?? '')
+  // A versão da chave muda junto com as fixtures; lê qualquer versão do banco simulado
+  const stored = await page.evaluate(() => {
+    const key = Object.keys(localStorage).find((k) => k.startsWith('kurio:mock-db:'))
+    return key ? (localStorage.getItem(key) ?? '') : ''
+  })
   expect(stored).toContain('davi@kurio.dev')
   expect(stored).not.toContain('Segredo123')
   expect(stored).not.toContain('Kurio@123')
