@@ -73,7 +73,16 @@ A chave identifica a **tentativa** de compra (uma por cotação confirmada) e fi
 
 ## Tempo real (Socket.IO)
 
-_Seção completada na integração do pedaço de tempo real._
+O app usa `socket.io-client` (transporte websocket, caminho `/tempo-real/`) contra um servidor Socket.IO simulado na camada de rede pelo MSW (`ws.link`, em `src/mocks/realtime/server.ts`), que fala o protocolo real: handshake Engine.IO v4, ping/pong, CONNECT com `auth: { token }` e eventos `42[...]`. Detalhes do transporte em [docs/realtime.md](docs/realtime.md).
+
+- **Fonte da verdade:** o banco simulado. `updateNft` e a liquidação de pedidos gravam e **então** emitem, então REST e eventos sempre concordam.
+- **Eventos** (`src/contracts/events.ts`, Zod): `nft.updated` (preço e disponibilidade das edições, para todos) e `order.updated` (estado do pedido, só para os sockets do dono). Todo evento tem `eventId`, id do recurso e `version`.
+- **Duplicatas e eventos antigos:** o cliente descarta `eventId` já visto (conjunto limitado) e versões ≤ à última conhecida, inclusive a que veio do REST — o estado nunca regride nem reaplica efeitos.
+- **Efeitos:** `nft.updated` atualiza detalhe, catálogo, destaques, relacionados e favoritos no cache e invalida o carrinho (a API recalcula a cotação; a tela avisa e bloqueia a finalização com item indisponível). No checkout, a API recusa a cotação antiga com `PRICE_CHANGED` e a pessoa confirma de novo. `order.updated` atualiza o pedido (`['order', id]`) na hora; o polling de 1 s fica como reserva.
+- **Sessão:** um socket por sessão. Ao trocar de identidade (login, logout, troca de usuário, expiração), o socket antigo e seus listeners são descartados e outro conecta com o novo token; eventos com `userId` diferente do usuário atual são ignorados. O hook `useSocketEvent` libera o listener ao desmontar.
+- **Reconexão:** a cada reconexão, as queries ativas de NFTs, carrinho e pedidos são invalidadas e reconciliadas com o REST. Pedido pendente durante uma queda ou refresh é retomado pelo id guardado na tentativa, sem criar outra compra.
+- **Demo/testes:** painel de cenários com "Alterar preço de um NFT do carrinho", "Esgotar edição de um NFT do carrinho", "Derrubar conexão" e "Reconectar"; em `window.__kurioMocks`: `updateNft`, `emitRaw`, `emitToUser`, `disconnectSockets`, `reconnectSockets`.
+- **Limitações:** só websocket (sem long-polling); um servidor simulado por aba (eventos só chegam aos sockets da aba onde a mudança aconteceu); sem rooms, acks ou recuperação de estado nativa do Socket.IO — a recuperação é a reconciliação via REST. A biblioteca `@mswjs/socket.io-binding` não foi usada porque só aceita MSW 2 (o projeto usa MSW 3), ignora o token de `auth` e não envia ping.
 
 ## API simulada (MSW)
 
