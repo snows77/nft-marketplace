@@ -113,7 +113,7 @@ test('senhas nunca ficam em claro no banco simulado', async ({ page }) => {
     password: 'Segredo123',
     confirmPassword: 'Segredo123',
   })
-  const stored = await page.evaluate(() => localStorage.getItem('kurio:mock-db:v2') ?? '')
+  const stored = await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('kurio:mock-db')).map((k) => localStorage.getItem(k)).join(''))
   expect(stored).toContain('davi@kurio.dev')
   expect(stored).not.toContain('Segredo123')
   expect(stored).not.toContain('Kurio@123')

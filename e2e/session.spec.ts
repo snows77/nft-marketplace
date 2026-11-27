@@ -58,7 +58,7 @@ test('logout limpa a sessão', async ({ page }) => {
 test('logout pelo menu do cabeçalho', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'menu do usuário existe no cabeçalho desktop')
   await loginAs(page, ANA)
-  await page.getByRole('button', { name: 'ana' }).click()
+  await page.getByRole('button', { name: 'ana', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Sair' }).click()
   await expect(page.getByText('Você saiu da sua conta.')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Entrar' })).toBeVisible()

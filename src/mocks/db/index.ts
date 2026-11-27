@@ -4,7 +4,7 @@ import { buildUsers, type DbUser } from './fixtures/users'
 
 // Troque o número da versão sempre que mudar as fixtures,
 // senão o navegador continua usando os dados antigos salvos.
-export const STORAGE_KEY = 'kurio:mock-db:v2'
+export const STORAGE_KEY = 'kurio:mock-db:v3'
 
 export interface DbSession {
   token: string

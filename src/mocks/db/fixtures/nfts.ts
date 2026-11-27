@@ -73,7 +73,8 @@ export function buildNfts(): Nft[] {
       (i % 11 === 0 ? 'lendario' : i % 5 === 0 ? 'epico' : i % 3 === 0 ? 'raro' : 'comum')
 
     const category = CATEGORIES[i % CATEGORIES.length]
-    const network = NETWORKS[Math.floor(i / 3) % NETWORKS.length]
+    // Rede descorrelacionada da categoria: toda combinação categoria × rede existe
+    const network = NETWORKS[(i + Math.floor(i / CATEGORIES.length)) % NETWORKS.length]
     const collection = COLLECTIONS[i % COLLECTIONS.length]
     const creator = CREATORS[i % CREATORS.length]
 

@@ -10,7 +10,7 @@ test('login com sucesso mostra o usuário', async ({ page }, testInfo) => {
   await loginAs(page, ANA)
   await expect(page).not.toHaveURL(/auth=/)
   if (testInfo.project.name === 'desktop') {
-    await expect(page.getByRole('button', { name: 'ana' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'ana', exact: true })).toBeVisible()
   }
 })
 
@@ -54,7 +54,7 @@ test('sessão sobrevive ao refresh', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'usuário aparece no cabeçalho do desktop')
   await loginAs(page, ANA)
   await page.reload()
-  await expect(page.getByRole('button', { name: 'ana' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'ana', exact: true })).toBeVisible()
 })
 
 test('redirect externo é ignorado', async ({ page }) => {
