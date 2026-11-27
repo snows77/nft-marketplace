@@ -10,6 +10,9 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
+  // 10s (padrão 5s): com a máquina ocupada (dois servidores/navegadores) a primeira
+  // renderização às vezes passava de 5s; em condição normal nada fica mais lento
+  expect: { timeout: 10_000 },
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: 'retain-on-failure',
