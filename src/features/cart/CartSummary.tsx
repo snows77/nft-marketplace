@@ -53,15 +53,14 @@ export function CartSummary({ cart }: { cart: Cart }) {
           Ajuste os itens indisponíveis para finalizar a compra.
         </p>
       )}
-      {/* Checkout chega no pedaço 7 (rota privada /checkout) */}
-      <a
-        href="/checkout"
+      <Link
+        to="/checkout"
+        disabled={blocked}
         aria-disabled={blocked || undefined}
-        onClick={(e) => blocked && e.preventDefault()}
         className="flex h-12 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground hover:bg-primary-light aria-disabled:cursor-not-allowed aria-disabled:opacity-50 md:rounded"
       >
         Conectar e finalizar
-      </a>
+      </Link>
       <Link to="/" hash="catalogo" className="block text-center text-body text-primary hover:underline">
         Continuar explorando
       </Link>

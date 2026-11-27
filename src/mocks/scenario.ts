@@ -3,7 +3,10 @@
 // aplica um preset no carregamento (útil para demonstração e links compartilháveis).
 
 export type LatencyMode = 'none' | 'normal' | 'slow' | 'variable'
-export type FailureKind = 'http-500' | 'http-503' | 'network' | 'timeout'
+// 'timeout-apos-criar': o servidor processa (ex.: cria o pedido) mas a resposta não chega
+// a tempo — o cliente precisa recuperar pela chave de idempotência
+export type FailureKind = 'http-500' | 'http-503' | 'network' | 'timeout' | 'timeout-apos-criar'
+export type Outcome = 'aprovar' | 'recusar'
 export type PresetName = 'padrao' | 'lento' | 'instavel' | 'offline'
 
 export interface FailureRule {
@@ -18,6 +21,9 @@ export interface Scenario {
   latency: LatencyMode
   seed: number
   failures: FailureRule[]
+  walletOutcome?: Outcome // a carteira aceita ou recusa a conexão (padrão: aprovar)
+  paymentOutcome?: Outcome // o pagamento é confirmado ou recusado (padrão: aprovar)
+  paymentDelayMs?: number // quanto o pedido fica "pendente" antes do resultado (padrão: 2000)
 }
 
 // Contrato do controle exposto em window.__kurioMocks (demonstração e Playwright).
@@ -139,13 +145,20 @@ export function nextDelay(): number {
   }
 }
 
-// Consome uma regra de falha que case com a requisição (se houver)
-export function takeFailure(method: string, path: string): FailureKind | null {
+// Consome uma regra de falha que case com a requisição (se houver).
+// O handler de rede trata as falhas "antes" do processamento; 'timeout-apos-criar' é
+// tratado pelo próprio handler de negócio, depois de gravar (passe kinds para filtrar).
+export function takeFailure(
+  method: string,
+  path: string,
+  kinds: FailureKind[] = ['http-500', 'http-503', 'network', 'timeout'],
+): FailureKind | null {
   const index = scenario.failures.findIndex(
     (rule) =>
       (rule.method === '*' || rule.method.toUpperCase() === method.toUpperCase()) &&
       path.startsWith(rule.path) &&
-      rule.times !== 0,
+      rule.times !== 0 &&
+      kinds.includes(rule.kind),
   )
   if (index === -1) return null
 

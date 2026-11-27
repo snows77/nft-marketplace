@@ -9,6 +9,7 @@ export class ApiRequestError extends Error {
   readonly status: number | null
   readonly fieldErrors?: Record<string, string[]>
   readonly requestUrl?: string // ex.: "/auth/session" (relativo a /api)
+  readonly details?: unknown // corpo completo da resposta (ex.: nova cotação num 409)
 
   constructor(
     code: ApiErrorCode,
@@ -16,6 +17,7 @@ export class ApiRequestError extends Error {
     status: number | null,
     fieldErrors?: Record<string, string[]>,
     requestUrl?: string,
+    details?: unknown,
   ) {
     super(message)
     this.name = 'ApiRequestError'
@@ -23,6 +25,7 @@ export class ApiRequestError extends Error {
     this.status = status
     this.fieldErrors = fieldErrors
     this.requestUrl = requestUrl
+    this.details = details
   }
 }
 
@@ -40,7 +43,7 @@ export function toApiError(err: unknown): unknown {
   const parsed = apiErrorSchema.safeParse(err.response.data)
   if (parsed.success) {
     const { code, message, fieldErrors } = parsed.data
-    return new ApiRequestError(code, message, err.response.status, fieldErrors, url)
+    return new ApiRequestError(code, message, err.response.status, fieldErrors, url, err.response.data)
   }
   return new ApiRequestError('TRANSIENT_ERROR', 'Algo deu errado. Tente novamente.', err.response.status, undefined, url)
 }

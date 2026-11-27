@@ -7,10 +7,14 @@ const SCENARIO_KEY = 'kurio:mock-scenario'
 export async function withScenario(page: Page, partial: Partial<Scenario>) {
   await page.addInitScript(
     ([key, value]) => {
-      // Só na primeira carga da aba; reloads do próprio teste mantêm o que o app salvou
-      if (!sessionStorage.getItem('kurio:e2e-scenario-set')) {
+      // Vale só na primeira carga da aba (reloads mantêm o que o app salvou). Se o teste
+      // chamar withScenario mais de uma vez (beforeEach + teste), a ÚLTIMA chamada vence:
+      // todos os scripts rodam na primeira carga e o flag só vira "done" após o load.
+      const flag = 'kurio:e2e-scenario-set'
+      if (sessionStorage.getItem(flag) !== 'done') {
         localStorage.setItem(key, value)
-        sessionStorage.setItem('kurio:e2e-scenario-set', '1')
+        sessionStorage.setItem(flag, 'pending')
+        window.addEventListener('load', () => sessionStorage.setItem(flag, 'done'), { once: true })
       }
     },
     [SCENARIO_KEY, JSON.stringify({ preset: 'padrao', latency: 'none', seed: 1, failures: [], ...partial })],
