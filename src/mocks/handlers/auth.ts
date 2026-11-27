@@ -12,7 +12,7 @@ export function apiError(status: number, error: ApiError) {
   return HttpResponse.json(error, { status })
 }
 
-function validationError(error: z.ZodError) {
+export function validationError(error: z.ZodError) {
   const fieldErrors: Record<string, string[]> = {}
   for (const issue of error.issues) {
     const key = String(issue.path[0] ?? '_')
@@ -80,6 +80,9 @@ export const authHandlers = [
       username,
       email,
       avatarUrl: null,
+      displayName: username,
+      ensName: null,
+      walletNickname: 'Minha carteira',
       salt,
       passwordHash: await hashPassword(salt, password),
     }

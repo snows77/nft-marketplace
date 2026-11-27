@@ -57,11 +57,12 @@ test('sessão sobrevive ao refresh', async ({ page }, testInfo) => {
   await expect(page.getByRole('button', { name: 'ana', exact: true })).toBeVisible()
 })
 
-test('redirect externo é ignorado', async ({ page }) => {
+test('redirect externo é ignorado', async ({ page, baseURL }) => {
   await page.goto('/?auth=entrar&redirect=//evil.com')
   await submitLogin(page, ANA.email, ANA.password)
   await expect(page.getByText('Olá, ana!')).toBeVisible()
-  await expect(page).toHaveURL(/^http:\/\/localhost:5174\//)
+  // Continua no próprio app (a porta vem de E2E_PORT)
+  await expect(page).toHaveURL((url) => url.origin === new URL(baseURL!).origin)
 })
 
 test('abrir o modal coloca o foco no primeiro campo', async ({ page }) => {

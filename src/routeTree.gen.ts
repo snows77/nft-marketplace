@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrivadoRouteImport } from './routes/_privado'
+import { Route as PrivadoCarteirasRouteImport } from './routes/_privado/carteiras'
 import { Route as PrivadoPerfilRouteImport } from './routes/_privado/perfil'
 
 const IndexRoute = IndexRouteImport.update({
@@ -22,6 +23,11 @@ const PrivadoRoute = PrivadoRouteImport.update({
   id: '/_privado',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivadoCarteirasRoute = PrivadoCarteirasRouteImport.update({
+  id: '/carteiras',
+  path: '/carteiras',
+  getParentRoute: () => PrivadoRoute,
+} as any)
 const PrivadoPerfilRoute = PrivadoPerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
@@ -30,24 +36,28 @@ const PrivadoPerfilRoute = PrivadoPerfilRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/carteiras': typeof PrivadoCarteirasRoute
   '/perfil': typeof PrivadoPerfilRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/carteiras': typeof PrivadoCarteirasRoute
   '/perfil': typeof PrivadoPerfilRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_privado': typeof PrivadoRouteWithChildren
+  '/_privado/carteiras': typeof PrivadoCarteirasRoute
   '/_privado/perfil': typeof PrivadoPerfilRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/perfil'
+  fullPaths: '/' | '/carteiras' | '/perfil'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/perfil'
-  id: '__root__' | '/' | '/_privado' | '/_privado/perfil'
+  to: '/' | '/carteiras' | '/perfil'
+  id:
+    '__root__' | '/' | '/_privado' | '/_privado/carteiras' | '/_privado/perfil'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -71,6 +81,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivadoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_privado/carteiras': {
+      id: '/_privado/carteiras'
+      path: '/carteiras'
+      fullPath: '/carteiras'
+      preLoaderRoute: typeof PrivadoCarteirasRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
     '/_privado/perfil': {
       id: '/_privado/perfil'
       path: '/perfil'
@@ -82,10 +99,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface PrivadoRouteChildren {
+  PrivadoCarteirasRoute: typeof PrivadoCarteirasRoute
   PrivadoPerfilRoute: typeof PrivadoPerfilRoute
 }
 
 const PrivadoRouteChildren: PrivadoRouteChildren = {
+  PrivadoCarteirasRoute: PrivadoCarteirasRoute,
   PrivadoPerfilRoute: PrivadoPerfilRoute,
 }
 

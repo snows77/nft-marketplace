@@ -12,3 +12,7 @@ export const nftKeys = {
 export const profileKeys = {
   detail: (userId: string) => ['profile', userId] as const,
 }
+
+export const walletKeys = {
+  list: (userId: string) => ['wallets', userId] as const,
+}
