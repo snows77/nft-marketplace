@@ -24,19 +24,23 @@ test('bolinhas trocam o destaque', async ({ page }) => {
   await expect(hero(page).getByRole('button', { name: 'Ir para o destaque 2' })).toHaveAttribute('aria-current', 'true')
 })
 
+// Relógio controlado (page.clock): o tempo do carrossel avança na hora, sem esperar de verdade
 test('com movimento reduzido o carrossel não troca sozinho', async ({ page }) => {
+  await page.clock.install()
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
   await expect(hero(page).getByRole('group', { name: '1 de 3' })).toBeVisible()
-  await page.waitForTimeout(7000)
+  await page.clock.runFor(20_000)
   await expect(hero(page).getByRole('group', { name: '1 de 3' })).toBeVisible()
 })
 
 test('sem movimento reduzido o carrossel avança sozinho', async ({ page }) => {
+  await page.clock.install()
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/')
   await expect(hero(page).getByRole('group', { name: '1 de 3' })).toBeVisible()
-  await expect(hero(page).getByRole('group', { name: '2 de 3' })).toBeVisible({ timeout: 9000 })
+  await page.clock.runFor(6_100) // autoplay de 6s
+  await expect(hero(page).getByRole('group', { name: '2 de 3' })).toBeVisible()
 })
 
 test('card do catálogo leva ao NFT', async ({ page }) => {
@@ -74,12 +78,13 @@ test('diário da cunhagem: ler mais avisa que é fora da demo', async ({ page })
 })
 
 test('botão de pausa para a rotação do carrossel', async ({ page }) => {
+  await page.clock.install()
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/')
   await expect(hero(page).getByRole('group', { name: '1 de 3' })).toBeVisible()
   await hero(page).getByRole('button', { name: 'Pausar rotação' }).click()
   await expect(hero(page).getByRole('button', { name: 'Retomar rotação' })).toBeVisible()
   await page.mouse.move(0, 0) // tira o mouse de cima: a pausa precisa continuar
-  await page.waitForTimeout(7000)
+  await page.clock.runFor(20_000)
   await expect(hero(page).getByRole('group', { name: '1 de 3' })).toBeVisible()
 })

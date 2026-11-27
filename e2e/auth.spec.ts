@@ -94,3 +94,16 @@ test('alternar para criar conta muda o formulário', async ({ page }, testInfo) 
   await expect(page).toHaveURL(/auth=cadastro/)
   await expect(authDialog(page).getByLabel('Confirmar senha')).toBeVisible()
 })
+
+test('Tab fica preso dentro do modal aberto', async ({ page }) => {
+  await page.goto('/?auth=entrar')
+  const dialog = authDialog(page)
+  await expect(dialog.getByLabel('E-mail')).toBeFocused()
+  // Dá a volta completa pelos controles do modal: o foco nunca sai dele
+  for (let i = 0; i < 15; i++) {
+    await page.keyboard.press('Tab')
+    expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true)
+  }
+  await page.keyboard.press('Shift+Tab')
+  expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true)
+})
