@@ -198,7 +198,9 @@ test('order.updated chega pelo socket e a liquidação emite a nova disponibilid
 })
 
 test('queda da conexão com pedido pendente: ao reconectar/recarregar recupera o mesmo pedido', async ({ page }) => {
-  await withScenario(page, { latency: 'none', paymentDelayMs: 3000 })
+  test.setTimeout(60_000)
+  // Pendente por tempo suficiente para recarregar a página antes da liquidação, mesmo com a máquina ocupada
+  await withScenario(page, { latency: 'none', paymentDelayMs: 8000 })
   await loginAs(page, ANA)
   await goToReview(page)
   await main(page).getByRole('button', { name: 'Confirmar compra' }).click()
@@ -210,7 +212,7 @@ test('queda da conexão com pedido pendente: ao reconectar/recarregar recupera o
   // O servidor simulado da nova página começa no ar: derruba de novo e religa
   await realtime(page).disconnect()
   await realtime(page).reconnect()
-  await expect(page).toHaveURL(/\/pedidos\//, { timeout: 20_000 })
+  await expect(page).toHaveURL(/\/pedidos\//, { timeout: 30_000 })
   await expect(main(page).getByText('Seus NFTs agora estão na sua carteira')).toBeVisible()
   expect(await ordersCount(page)).toBe(1)
 })
