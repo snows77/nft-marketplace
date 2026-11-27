@@ -1,5 +1,6 @@
 import { api } from './client'
 import {
+  featuredResponseSchema,
   nftListResponseSchema,
   nftSchema,
   type NftListQuery,
@@ -13,4 +14,8 @@ export async function fetchNfts(query: Partial<NftListQuery>, signal?: AbortSign
 export async function fetchNft(id: string, signal?: AbortSignal) {
   const res = await api.get(`/nfts/${id}`, { signal })
   return nftSchema.parse(res.data)
+}
+export async function fetchFeaturedNfts(signal?: AbortSignal) {
+  const res = await api.get('/nfts/featured', { signal })
+  return featuredResponseSchema.parse(res.data)
 }

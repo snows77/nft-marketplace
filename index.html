@@ -10,6 +10,15 @@
       content="Kurio: descubra, colecione e compre NFTs selecionados de criadores emergentes e consagrados."
     />
     <title>Kurio — Marketplace de NFTs</title>
+    <!-- Imagem do hero (maior elemento da primeira tela): baixa antes do app carregar -->
+    <link
+      rel="preload"
+      as="image"
+      href="/images/nfts/emerald-ape.webp"
+      imagesrcset="/images/nfts/emerald-ape-480.webp 480w, /images/nfts/emerald-ape.webp 960w"
+      imagesizes="(min-width: 768px) 450px, 160px"
+      fetchpriority="high"
+    />
   </head>
   <body>
     <div id="root"></div>

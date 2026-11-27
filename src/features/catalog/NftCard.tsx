@@ -1,6 +1,6 @@
 import type { NftSummary } from '@/contracts/nft'
 import { formatEth, formatTokenNumber } from '@/lib/format'
-import { srcSetFor } from '@/lib/images'
+import { smallImage, srcSetFor } from '@/lib/images'
 
 const RARITY_BADGE: Partial<Record<NftSummary['rarity'], string>> = {
   raro: 'RARO',
@@ -18,18 +18,23 @@ export function NftCard({ nft, priority = false }: { nft: NftSummary; priority?:
     // Rota de detalhe chega no pedaço 4; até lá o link cai na página 404
     <a href={`/nft/${nft.id}`} className="group block rounded-2xl focus-visible:outline-offset-4">
       <div className="relative aspect-[258/300] overflow-hidden rounded-2xl bg-card p-2 md:rounded-none md:p-1">
-        <img
-          src={nft.image}
-          srcSet={srcSetFor(nft.image)}
-          // Larguras medidas do card: 3 colunas no desktop, 2 no tablet/celular
-          sizes="(min-width: 1024px) 260px, (min-width: 768px) 350px, calc(50vw - 48px)"
-          alt={title}
-          width={400}
-          height={400}
-          loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : 'auto'}
-          className="absolute inset-x-2 top-1/2 aspect-square w-[calc(100%-1rem)] -translate-y-1/2 rounded-2xl object-cover transition-transform duration-300 group-hover:scale-[1.02] md:inset-x-1 md:w-[calc(100%-0.5rem)] motion-reduce:transition-none"
-        />
+        {/* <picture> com regra explícita: no celular (até 767px, card ≈ 150px) sempre a
+            versão de 480px. Só com srcset/sizes o Chrome às vezes escolhia a de 960px. */}
+        <picture>
+          <source media="(max-width: 767px)" srcSet={smallImage(nft.image)} />
+          <img
+            // sizes antes de srcSet/src: o React aplica os atributos em ordem
+            sizes="(min-width: 1024px) 260px, 350px"
+            src={nft.image}
+            srcSet={srcSetFor(nft.image)}
+            alt={title}
+            width={400}
+            height={400}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            className="absolute inset-x-2 top-1/2 aspect-square w-[calc(100%-1rem)] -translate-y-1/2 rounded-2xl object-cover transition-transform duration-300 group-hover:scale-[1.02] md:inset-x-1 md:w-[calc(100%-0.5rem)] motion-reduce:transition-none"
+          />
+        </picture>
         {badge && (
           <span className="absolute top-3 left-0 bg-primary px-2 py-1 text-caption font-bold text-primary-foreground">
             {badge}

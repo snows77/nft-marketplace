@@ -88,7 +88,8 @@ export function buildNfts(): Nft[] {
       rarity,
       category,
       network,
-      featured: i % 20 === 1,
+      // Destaques: Emerald Ape (hero do Figma), Sage Nomad (card "NFT em destaque") e mais dois
+      featured: i === 0 || i === 1 || i === 20 || i === 40,
       version: 1,
 
       collection,

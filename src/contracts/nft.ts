@@ -78,3 +78,5 @@ export type NftSummary = z.infer<typeof nftSummarySchema>
 export type NftEdition = z.infer<typeof editionSchema>
 export type NftListQuery = z.infer<typeof nftListQuerySchema>
 export type NftListResponse = z.infer<typeof nftListResponseSchema>
+// GET /api/nfts/featured: destaques do Início (hero e "NFT em destaque")
+export const featuredResponseSchema = z.array(nftSummarySchema)

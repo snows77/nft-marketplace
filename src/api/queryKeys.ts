@@ -6,6 +6,7 @@ export const nftKeys = {
   all: ['nfts'] as const,
   list: (params: NftSearch) => ['nfts', 'list', params] as const,
   detail: (id: string) => ['nfts', 'detail', id] as const,
+  featured: ['nfts', 'featured'] as const,
 }
 
 export const profileKeys = {

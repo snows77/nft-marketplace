@@ -19,7 +19,7 @@ test.describe('celular com tela de alta densidade', () => {
   test('baixa a versão pequena da imagem', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mobile', 'cenário de celular')
     await page.goto('/')
-    const img = page.getByRole('region', { name: 'Catálogo' }).getByRole('img').first()
+    const img = page.getByRole('list', { name: 'NFTs' }).getByRole('img').first()
     await expect
       .poll(() => img.evaluate((el: HTMLImageElement) => el.currentSrc))
       .toMatch(/-480\.webp$/)

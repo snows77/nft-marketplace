@@ -66,6 +66,14 @@ function countBy(items: Nft[], key: 'category' | 'network'): Record<string, numb
 }
 
 export const nftHandlers = [
+  // Antes de /api/nfts/:id, senão "featured" seria lido como um id
+  http.get('/api/nfts/featured', () => {
+    const items = getDb()
+      .nfts.filter((n) => n.featured)
+      .map((n) => nftSummarySchema.parse(n))
+    return HttpResponse.json(items)
+  }),
+
   http.get('/api/nfts', ({ request }) => {
     const parsed = parseQuery(new URL(request.url))
 

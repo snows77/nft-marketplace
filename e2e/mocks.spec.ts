@@ -18,7 +18,8 @@ test('catálogo lento mostra skeleton e depois os NFTs', async ({ page }) => {
 test('falha 500 mostra erro e recupera ao tentar de novo', async ({ page }) => {
   // 3 = tentativa inicial + 2 retries automáticos
   await withScenario(page, {
-    failures: [{ method: 'GET', path: '/api/nfts', kind: 'http-500', times: 3 }],
+    // '/api/nfts?' = só a listagem (não os destaques /api/nfts/featured)
+    failures: [{ method: 'GET', path: '/api/nfts?', kind: 'http-500', times: 3 }],
   })
   await page.goto('/')
   await expect(page.getByRole('alert')).toContainText('Não foi possível carregar os NFTs.')

@@ -91,7 +91,7 @@ export function MockPanel() {
                 setScenario({
                   failures: [
                     ...scenario.failures,
-                    { method: 'GET', path: '/api/nfts', kind: 'http-500', times: 3 },
+                    { method: 'GET', path: '/api/nfts?', kind: 'http-500', times: 3 }, // só a listagem
                   ],
                 })
               }
