@@ -24,10 +24,9 @@ export function MobileTabBar() {
           </Link>
         </li>
         <li>
-          {/* Rotas criadas nos próximos pedaços; até lá caem na página 404 */}
-          <a href="/favoritos" aria-label="Favoritos" className={item}>
+          <Link to="/favoritos" aria-label="Favoritos" className={item} activeProps={{ className: 'text-primary' }}>
             <Heart className="size-6" aria-hidden="true" />
-          </a>
+          </Link>
         </li>
         <li className="-mt-10">
           <Link
@@ -40,6 +39,7 @@ export function MobileTabBar() {
           </Link>
         </li>
         <li>
+          {/* Rota criada no pedaço do carrinho; até lá cai na página 404 */}
           <a href="/carrinho" aria-label="Carrinho" className={item}>
             <ShoppingCart className="size-6" aria-hidden="true" />
           </a>

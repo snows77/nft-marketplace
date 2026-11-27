@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import type { NftSummary } from '@/contracts/nft'
 import { formatTokenNumber } from '@/lib/format'
 import { srcSetFor } from '@/lib/images'
@@ -9,8 +10,7 @@ export function FeaturedNft({ nft }: { nft: NftSummary | undefined }) {
       <p className="px-5 text-heading font-bold text-primary">NFT EM DESTAQUE</p>
       <p className="mt-2 text-center text-title font-bold">OFERTA LIMITADA</p>
       {nft ? (
-        // Rota de detalhe chega no pedaço 4
-        <a href={`/nft/${nft.id}`} className="mt-3 block overflow-hidden rounded-3xl">
+        <Link to="/nft/$nftId" params={{ nftId: nft.id }} className="mt-3 block overflow-hidden rounded-3xl">
           <img
             // sizes antes de srcSet/src: o React aplica os atributos em ordem e a imagem
             // começaria a baixar sem saber o tamanho de exibição (pegando a maior)
@@ -23,7 +23,7 @@ export function FeaturedNft({ nft }: { nft: NftSummary | undefined }) {
             loading="lazy"
             className="aspect-[310/365] w-full object-cover transition-transform duration-300 hover:scale-[1.02] motion-reduce:transition-none"
           />
-        </a>
+        </Link>
       ) : (
         <div className="skeleton mt-3 aspect-[310/365] rounded-3xl" aria-hidden="true" />
       )}

@@ -22,7 +22,6 @@ type Icon = ComponentType<SVGProps<SVGSVGElement>>
 // Itens do menu "Meu perfil" do Figma que não fazem parte da entrega
 const UNAVAILABLE: { label: string; Icon: Icon }[] = [
   { label: 'Atividade', Icon: ShoppingCart },
-  { label: 'Lista de interesse', Icon: Heart },
   { label: 'Ofertas', Icon: ChartLine },
   { label: 'Arquivos baixados', Icon: Download },
   { label: 'Suporte', Icon: CircleAlert },
@@ -84,6 +83,12 @@ export function AccountLayout({ children }: { children: ReactNode }) {
                 <Link to="/carteiras" className={itemClass} activeProps={{ className: activeClass }}>
                   <MapPin className="size-4" aria-hidden="true" />
                   Carteiras
+                </Link>
+              </li>
+              <li>
+                <Link to="/favoritos" className={itemClass} activeProps={{ className: activeClass }}>
+                  <Heart className="size-4" aria-hidden="true" />
+                  Lista de interesse
                 </Link>
               </li>
               {UNAVAILABLE.map(({ label, Icon }) => (

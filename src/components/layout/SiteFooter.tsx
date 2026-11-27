@@ -59,11 +59,16 @@ export function SiteFooter() {
                   Meu perfil
                 </Link>
               </li>
-              {['Minha coleção', 'Atividade', 'Estúdio do criador', 'Lista de interesse'].map((label) => (
+              {['Minha coleção', 'Atividade', 'Estúdio do criador'].map((label) => (
                 <li key={label}>
                   <UnavailableLink>{label}</UnavailableLink>
                 </li>
               ))}
+              <li>
+                <Link to="/favoritos" className={linkClass}>
+                  Lista de interesse
+                </Link>
+              </li>
             </ul>
           </nav>
 
