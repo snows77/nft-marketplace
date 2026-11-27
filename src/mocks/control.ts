@@ -1,4 +1,6 @@
 import { expireAllSessions, resetDb, STORAGE_KEY as MOCK_DB_KEY } from './db'
+import { resumePendingSettlements } from './handlers/orders'
+import { disconnectSockets, emitRaw, emitToUser, reconnectSockets, updateNft } from './realtime/server'
 import { applyPreset, getScenario, resetScenario, setScenario } from './scenario'
 
 // Volta tudo a um estado conhecido: dados da demo, cenário e qualquer dado local do app
@@ -28,5 +30,13 @@ export function installMockControl(): void {
       setScenario({ failures: [...getScenario().failures, { method, path, kind, times }] }),
     reset: resetDemo,
     expireSession: expireAllSessions,
+    updateNft,
+    emitRaw,
+    // Sem validação de propósito: os testes mandam payloads inválidos/de outro usuário
+    emitToUser: (userId, event, payload) => emitToUser(userId, event as 'order.updated', payload as never),
+    disconnectSockets,
+    reconnectSockets,
   }
+  // Pedidos que ficaram pendentes antes de um refresh voltam a ter o timer de liquidação
+  resumePendingSettlements()
 }

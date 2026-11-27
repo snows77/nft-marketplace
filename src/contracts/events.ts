@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { ethString } from './common'
+import { orderStatusSchema } from './order'
 
 // Eventos em tempo real (Socket.IO). Todo evento carrega:
 // - eventId: identidade estável (o mesmo evento reenviado mantém o id) → deduplicação;
@@ -16,8 +17,6 @@ export const nftUpdatedEventSchema = z.object({
   editions: z.array(z.object({ id: z.string(), available: z.number().int().min(0) })),
   occurredAt: z.string(), // ISO
 })
-
-export const orderStatusSchema = z.enum(['pendente', 'confirmado', 'recusado'])
 
 // order.updated: o estado de um pedido mudou (enviado só aos sockets do dono do pedido)
 export const orderUpdatedEventSchema = z.object({

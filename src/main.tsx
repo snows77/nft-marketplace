@@ -4,6 +4,8 @@ import { setApiReady } from './api/ready'
 import { MockPanelSlot } from './components/layout/MockPanelSlot'
 import { installSessionExpiryHandler } from './features/auth/expiration'
 import { installSessionGuards } from './features/auth/guards'
+import { getRealtimeStats, installRealtime } from './features/realtime/client'
+import { installRealtimeSync } from './features/realtime/sync'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -77,6 +79,7 @@ async function enableMocks(): Promise<ComponentType | null> {
         .getAll()
         .filter((query) => query.state.data !== undefined)
         .map((query) => query.queryKey),
+    realtime: getRealtimeStats,
   }
   return MockPanel
 }
@@ -91,3 +94,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </QueryClientProvider>
   </StrictMode>,
 )
+
+// Tempo real (Socket.IO): conecta depois dos mocks, para o MSW já interceptar o WebSocket.
+// Sem mocks, só conecta se houver um servidor de verdade configurado (VITE_SOCKET_ENABLED).
+void mockPanel.then((panel) => {
+  if (panel || import.meta.env.VITE_SOCKET_ENABLED === 'true') {
+    installRealtimeSync(queryClient)
+    void installRealtime(queryClient)
+  }
+})
