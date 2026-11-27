@@ -2,7 +2,7 @@
 
 Solução do desafio frontend ([Desafio.md](Desafio.md)): descoberta, compra e conta do colecionador, em desktop e mobile, seguindo o [Figma](docs/figma/). Toda a API (REST e tempo real) é simulada com **MSW** na camada de rede, inclusive na versão publicada.
 
-**Demo pública:** _a URL da Vercel será adicionada aqui após o deploy._
+**Demo pública:** https://nft-marketplace-two-zeta.vercel.app (deploy da Vercel a cada push na branch de produção; a API simulada roda no navegador)
 
 **Stack:** React 19 · TypeScript · Vite 8 · TanStack Router · TanStack Query · Axios · Zod · Socket.IO (client) · Tailwind CSS 4 · shadcn/ui · MSW 3 · Playwright · Lighthouse.
 
