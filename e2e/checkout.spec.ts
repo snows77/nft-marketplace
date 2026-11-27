@@ -126,14 +126,16 @@ test('mudança no carrinho depois da revisão exige nova confirmação', async (
 })
 
 test('pedido pendente é recuperado após recarregar', async ({ page }) => {
-  await withScenario(page, { latency: 'none', paymentDelayMs: 4000 })
+  test.setTimeout(60_000)
+  // 8 s pendente: com a suíte inteira rodando, o recarregamento às vezes passava de 4 s
+  await withScenario(page, { latency: 'none', paymentDelayMs: 8000 })
   await loginAs(page, ANA)
   await goToReview(page)
   await checkout(page).getByRole('button', { name: 'Confirmar compra' }).click()
   await expect(checkout(page).getByText('Aguardando confirmação na rede')).toBeVisible()
   await page.reload()
   await expect(checkout(page).getByText('Aguardando confirmação na rede')).toBeVisible()
-  await expect(page).toHaveURL(/\/pedidos\//, { timeout: 20_000 })
+  await expect(page).toHaveURL(/\/pedidos\//, { timeout: 30_000 })
   expect(await ordersCount(page)).toBe(1)
 })
 

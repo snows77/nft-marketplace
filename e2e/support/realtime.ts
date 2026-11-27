@@ -19,10 +19,11 @@ export function realtime(page: Page) {
 
 // Espera o socket do cliente estar conectado (e, se informado, autenticado como o usuário)
 export async function waitConnected(page: Page, userId: string | null = null) {
+  // 20 s: com a suíte inteira rodando, a (re)conexão às vezes demora mais que o padrão
   await expect
     .poll(async () => {
       const stats = await page.evaluate(() => window.__kurioDebug?.realtime())
       return stats && { status: stats.status, userId: stats.userId }
-    })
+    }, { timeout: 20_000 })
     .toEqual({ status: 'conectado', userId })
 }
