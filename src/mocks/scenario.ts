@@ -35,11 +35,48 @@ export interface KurioMocks {
   failNext: (method: string, path: string, kind: FailureKind, times?: number) => void
   reset: () => void
   expireSession: () => void
+  // Tempo real (servidor Socket.IO simulado): muda o banco e emite nft.updated
+  updateNft: (nftId: string, patch: NftPatch) => NftUpdatedPayload
+  // Envia um evento cru a todos os sockets, sem mexer no banco (duplicatas, versões antigas)
+  emitRaw: (event: string, payload: unknown) => number
+  // Envia um evento só aos sockets autenticados como o usuário; devolve quantos receberam
+  emitToUser: (userId: string, event: string, payload: unknown) => number
+  // Simula queda da conexão em tempo real (recusa novas conexões até reconectar)
+  disconnectSockets: () => void
+  reconnectSockets: () => void
+}
+
+// Alteração de um NFT no servidor simulado (editions: só as edições informadas mudam)
+export interface NftPatch {
+  priceEth?: string
+  editions?: { id: string; available: number }[]
+}
+
+// Mesmo formato do contrato nft.updated (src/contracts/events.ts)
+export interface NftUpdatedPayload {
+  eventId: string
+  nftId: string
+  version: number
+  priceEth: string
+  editions: { id: string; available: number }[]
+  occurredAt: string
+}
+
+export type RealtimeStatus = 'conectando' | 'conectado' | 'desconectado'
+
+// Estatísticas do cliente de tempo real (o que chegou, o que foi aplicado e o que foi ignorado)
+export interface RealtimeStats {
+  status: RealtimeStatus
+  userId: string | null // usuário da sessão com que o socket atual se conectou
+  received: Record<string, number>
+  applied: Record<string, number>
+  ignored: { duplicate: number; stale: number; otherUser: number; invalid: number }
 }
 
 // Inspeção do cache do TanStack Query, usada nos testes de isolamento entre usuários
 export interface KurioDebug {
   cachedQueryKeys: () => readonly (readonly unknown[])[]
+  realtime: () => RealtimeStats
 }
 
 declare global {

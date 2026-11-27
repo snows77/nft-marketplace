@@ -2,6 +2,7 @@ import { delay, http, HttpResponse } from 'msw'
 import { createOrderInputSchema, orderSchema, quoteSchema, type Order, type Quote } from '@/contracts/order'
 import { NETWORK_LABELS, PROVIDER_LABELS } from '@/contracts/wallet'
 import { getDb, saveDb } from '../db'
+import { emitNftSnapshot, emitToUser, newEventId } from '../realtime/server'
 import { getScenario, takeFailure } from '../scenario'
 import { apiError, requireSession, validationError } from './auth'
 import { toCartResponse } from './cart'
@@ -152,8 +153,45 @@ export function settleDueOrders(now = Date.now()): DbOrder[] {
     order.updatedAt = stamp
     settled.push(order)
   }
-  if (settled.length) saveDb()
+  if (settled.length) {
+    saveDb()
+    notifySettled(settled)
+  }
   return settled
+}
+
+// Avisa pelo socket o que a liquidação mudou: o estado do pedido (só ao dono) e a
+// disponibilidade dos NFTs comprados (a todos). Os eventos saem depois de gravar o
+// banco, então REST e eventos contam a mesma história.
+function notifySettled(orders: DbOrder[]) {
+  const touchedNfts = new Set<string>()
+  for (const order of orders) {
+    emitToUser(order.userId, 'order.updated', {
+      eventId: newEventId(),
+      orderId: order.id,
+      userId: order.userId,
+      version: order.version,
+      status: order.status,
+      occurredAt: order.updatedAt,
+    })
+    if (order.status === 'confirmado') order.items.forEach((item) => touchedNfts.add(item.nftId))
+  }
+  touchedNfts.forEach((nftId) => emitNftSnapshot(nftId))
+}
+
+// O pagamento termina sozinho no servidor (sem depender de alguém consultar o pedido):
+// um timer até settleAt liquida e emite os eventos. Se a página recarregar antes, a
+// próxima leitura liquida e emite do mesmo jeito.
+function scheduleSettlement(order: DbOrder) {
+  const wait = Math.max(0, new Date(order.settleAt).getTime() - Date.now())
+  setTimeout(() => settleDueOrders(), wait + 10)
+}
+
+// Na partida dos mocks (ex.: depois de um refresh): reagenda os pedidos ainda pendentes
+export function resumePendingSettlements(): void {
+  store()
+    .orders.filter((order) => order.status === 'pendente')
+    .forEach(scheduleSettlement)
 }
 
 export const orderHandlers = [
@@ -260,6 +298,7 @@ export const orderHandlers = [
     db.idempotency.push({ key, userId, bodyHash: raw, orderId: order.id })
     db.quotes = db.quotes.filter((q) => q.id !== quoteId) // cotação usada
     saveDb()
+    scheduleSettlement(order)
 
     // Cenário "timeout depois de criar": o pedido existe, mas a resposta não chega a tempo
     if (takeFailure('POST', '/api/orders', ['timeout-apos-criar'])) {

@@ -1,7 +1,11 @@
 import { useId, useState, useSyncExternalStore } from 'react'
 import { FlaskConical, X } from 'lucide-react'
+import { toast } from 'sonner'
+import { getRealtimeStatus, subscribeRealtimeStatus } from '@/features/realtime/client'
 import { resetDemo } from './control'
 import { expireAllSessions } from './db'
+import { raiseFirstCartItemPrice, soldOutFirstCartItem } from './realtime/demo'
+import { disconnectSockets, isSocketServerOnline, reconnectSockets } from './realtime/server'
 import {
   applyPreset,
   getScenario,
@@ -103,6 +107,7 @@ export function MockPanel() {
                 Falhas pendentes: {scenario.failures.length}
               </p>
             )}
+            <RealtimeControls />
             <button type="button" className={actionClass} onClick={expireAllSessions}>
               Expirar sessão agora
             </button>
@@ -129,5 +134,44 @@ export function MockPanel() {
         {!isDefault && <span className="rounded bg-primary px-1 text-primary-foreground">: {badge}</span>}
       </button>
     </div>
+  )
+}
+
+const STATUS_LABEL = { conectando: 'conectando…', conectado: 'conectado', desconectado: 'desconectado' } as const
+
+// Tempo real: mudanças no servidor simulado (banco + evento Socket.IO) e queda da conexão
+function RealtimeControls() {
+  const status = useSyncExternalStore(subscribeRealtimeStatus, getRealtimeStatus)
+  const [online, setOnline] = useState(isSocketServerOnline)
+  const emptyCart = () => toast('Adicione um NFT ao carrinho para testar o tempo real.')
+
+  return (
+    <fieldset className="space-y-2 border-t border-border pt-3">
+      <legend className="sr-only">Tempo real</legend>
+      <p className="flex items-center gap-1.5 text-2xs text-muted-foreground" aria-live="polite">
+        <span
+          aria-hidden="true"
+          className={`size-2 rounded-full ${status === 'conectado' ? 'bg-primary' : 'bg-muted-foreground'}`}
+        />
+        Tempo real: {STATUS_LABEL[status]}
+      </p>
+      <button type="button" className={actionClass} onClick={() => raiseFirstCartItemPrice() || emptyCart()}>
+        Alterar preço de um NFT do carrinho
+      </button>
+      <button type="button" className={actionClass} onClick={() => soldOutFirstCartItem() || emptyCart()}>
+        Esgotar edição de um NFT do carrinho
+      </button>
+      <button
+        type="button"
+        className={actionClass}
+        onClick={() => {
+          if (online) disconnectSockets()
+          else reconnectSockets()
+          setOnline(!online)
+        }}
+      >
+        {online ? 'Derrubar conexão em tempo real' : 'Reconectar'}
+      </button>
+    </fieldset>
   )
 }
