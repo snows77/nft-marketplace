@@ -82,7 +82,7 @@ export function NftDetail({ nft }: { nft: Nft }) {
           </div>
           <p className="mt-1 flex items-baseline gap-2 text-title font-bold text-text-accent">
             <span className="sr-only">Preço por unidade: </span>
-            {formatEth(nft.priceEth)}
+            <span data-testid="detail-price">{formatEth(nft.priceEth)}</span>
             {nft.originalPriceEth && (
               <span className="text-body font-normal text-muted-foreground line-through">
                 <span className="sr-only">Preço original: </span>
