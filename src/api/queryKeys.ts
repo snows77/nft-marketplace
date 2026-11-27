@@ -16,3 +16,8 @@ export const profileKeys = {
 export const walletKeys = {
   list: (userId: string) => ['wallets', userId] as const,
 }
+
+// Carrinho: do usuário logado ou do visitante (chave separada, nunca compartilhada)
+export const cartKeys = {
+  detail: (owner: string) => ['cart', owner] as const,
+}

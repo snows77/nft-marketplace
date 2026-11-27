@@ -1,8 +1,9 @@
 import { Link } from '@tanstack/react-router'
-import { LogIn, Search, ShoppingCart } from 'lucide-react'
+import { LogIn, Search } from 'lucide-react'
 import { notifyUnavailable } from '@/lib/unavailable'
 import { useSession } from '@/features/auth/session'
 import { UserMenu } from '@/features/auth/UserMenu'
+import { CartLink } from '@/features/cart/CartLink'
 import { Container } from './Container'
 
 const navItem =
@@ -62,10 +63,7 @@ export function SiteHeader() {
           >
             <Search className="size-6" aria-hidden="true" />
           </Link>
-          {/* Rotas criadas nos próximos pedaços; até lá caem na página 404 */}
-          <a href="/carrinho" aria-label="Carrinho" className="rounded p-1 hover:text-primary">
-            <ShoppingCart className="size-6" aria-hidden="true" />
-          </a>
+          <CartLink className="rounded p-1 hover:text-primary" />
           {isPending ? (
             // Reserva o espaço enquanto a sessão carrega, sem "piscar" o botão Entrar
             <span className="h-9 w-24" aria-hidden="true" />

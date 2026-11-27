@@ -2,10 +2,11 @@ import type { Nft } from '@/contracts/nft'
 import { buildNfts } from './fixtures/nfts'
 import { buildUsers, type DbUser } from './fixtures/users'
 import { buildWallets, type DbWallet } from './fixtures/wallets'
+import { buildCarts, type DbCart } from './fixtures/carts'
 
 // Troque o número da versão sempre que mudar as fixtures,
 // senão o navegador continua usando os dados antigos salvos.
-export const STORAGE_KEY = 'kurio:mock-db:v5'
+export const STORAGE_KEY = 'kurio:mock-db:v6'
 
 export interface DbSession {
   token: string
@@ -18,10 +19,11 @@ interface MockDbState {
   users: DbUser[]
   sessions: DbSession[]
   wallets: DbWallet[]
+  carts: DbCart[]
 }
 
 function seed(): MockDbState {
-  return { nfts: buildNfts(), users: buildUsers(), sessions: [], wallets: buildWallets() }
+  return { nfts: buildNfts(), users: buildUsers(), sessions: [], wallets: buildWallets(), carts: buildCarts() }
 }
 
 function load(): MockDbState {

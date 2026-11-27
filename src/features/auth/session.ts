@@ -11,6 +11,7 @@ import { fetchSession, login, logout, register } from '@/api/auth'
 import { ApiRequestError } from '@/api/errors'
 import { getToken, setToken } from '@/api/token'
 import type { Session } from '@/contracts/auth'
+import { mergeGuestCartIntoAccount } from '@/features/cart/merge'
 
 export const sessionKey = ['session'] as const
 
@@ -50,6 +51,7 @@ function useStartSession() {
   const queryClient = useQueryClient()
   return (session: Session) => {
     switchSession(queryClient, session)
+    void mergeGuestCartIntoAccount(queryClient, session.user.id)
     toast.success(`Olá, ${session.user.username}!`)
   }
 }

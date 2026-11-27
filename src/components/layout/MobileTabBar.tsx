@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import { Heart, House, ScanLine, ShoppingCart, User } from 'lucide-react'
+import { CartLink } from '@/features/cart/CartLink'
+import { Heart, House, ScanLine, User } from 'lucide-react'
 
 const item =
   'flex size-12 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-primary'
@@ -41,9 +42,7 @@ export function MobileTabBar() {
           </Link>
         </li>
         <li>
-          <a href="/carrinho" aria-label="Carrinho" className={item}>
-            <ShoppingCart className="size-6" aria-hidden="true" />
-          </a>
+          <CartLink className={item} />
         </li>
         <li>
           <Link to="/perfil" aria-label="Perfil" className={item} activeProps={{ className: 'text-primary' }}>

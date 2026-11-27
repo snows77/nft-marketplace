@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrivadoRouteImport } from './routes/_privado'
+import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as PrivadoCarteirasRouteImport } from './routes/_privado/carteiras'
 import { Route as PrivadoPerfilRouteImport } from './routes/_privado/perfil'
 
@@ -21,6 +22,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const PrivadoRoute = PrivadoRouteImport.update({
   id: '/_privado',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarrinhoRoute = CarrinhoRouteImport.update({
+  id: '/carrinho',
+  path: '/carrinho',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivadoCarteirasRoute = PrivadoCarteirasRouteImport.update({
@@ -36,11 +42,13 @@ const PrivadoPerfilRoute = PrivadoPerfilRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/carrinho': typeof CarrinhoRoute
   '/carteiras': typeof PrivadoCarteirasRoute
   '/perfil': typeof PrivadoPerfilRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/carrinho': typeof CarrinhoRoute
   '/carteiras': typeof PrivadoCarteirasRoute
   '/perfil': typeof PrivadoPerfilRoute
 }
@@ -48,21 +56,28 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_privado': typeof PrivadoRouteWithChildren
+  '/carrinho': typeof CarrinhoRoute
   '/_privado/carteiras': typeof PrivadoCarteirasRoute
   '/_privado/perfil': typeof PrivadoPerfilRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/carteiras' | '/perfil'
+  fullPaths: '/' | '/carrinho' | '/carteiras' | '/perfil'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/carteiras' | '/perfil'
+  to: '/' | '/carrinho' | '/carteiras' | '/perfil'
   id:
-    '__root__' | '/' | '/_privado' | '/_privado/carteiras' | '/_privado/perfil'
+    | '__root__'
+    | '/'
+    | '/_privado'
+    | '/carrinho'
+    | '/_privado/carteiras'
+    | '/_privado/perfil'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PrivadoRoute: typeof PrivadoRouteWithChildren
+  CarrinhoRoute: typeof CarrinhoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -79,6 +94,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof PrivadoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/carrinho': {
+      id: '/carrinho'
+      path: '/carrinho'
+      fullPath: '/carrinho'
+      preLoaderRoute: typeof CarrinhoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_privado/carteiras': {
@@ -114,6 +136,7 @@ const PrivadoRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PrivadoRoute: PrivadoRouteWithChildren,
+  CarrinhoRoute: CarrinhoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
