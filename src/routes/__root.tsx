@@ -36,7 +36,9 @@ function RootLayout() {
         Pular para o conteúdo
       </a>
       <SiteHeader />
-      <main id="conteudo" tabIndex={-1} className="outline-none">
+      {/* min-h-dvh: o rodapé começa abaixo da dobra, então trocar o skeleton pelo conteúdo
+          não empurra nada visível (sem deslocamento de layout / CLS) */}
+      <main id="conteudo" tabIndex={-1} className="min-h-dvh outline-none">
         <Outlet />
       </main>
       <SiteFooter />

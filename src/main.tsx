@@ -1,5 +1,7 @@
 import { StrictMode, type ComponentType } from 'react'
 import { isTransient } from './api/errors'
+import { setApiReady } from './api/ready'
+import { MockPanelSlot } from './components/layout/MockPanelSlot'
 import { installSessionExpiryHandler } from './features/auth/expiration'
 import { installSessionGuards } from './features/auth/guards'
 import ReactDOM from 'react-dom/client'
@@ -49,9 +51,13 @@ installSessionExpiryHandler(router, queryClient)
 // Troca de identidade (inclusive vinda de outra aba) descarta os dados do usuário anterior
 installSessionGuards(router, queryClient)
 
-// Liga a API simulada (MSW) e devolve o painel de cenários, quando configurado
+// Liga a API simulada (MSW) e devolve o painel de cenários, quando configurado.
+// A tela já foi desenhada; as requisições aguardam (apiReady) até o worker ativar.
 async function enableMocks(): Promise<ComponentType | null> {
-  if (import.meta.env.VITE_ENABLE_MOCKS !== 'true') return null
+  if (import.meta.env.VITE_ENABLE_MOCKS !== 'true') {
+    setApiReady()
+    return null
+  }
   const [{ worker }, { installMockControl }, { MockPanel }] = await Promise.all([
     import('./mocks/browser'),
     import('./mocks/control'),
@@ -60,6 +66,9 @@ async function enableMocks(): Promise<ComponentType | null> {
   // Imagens, fontes etc. não têm handler: seguem direto para a rede
   await worker.start({ onUnhandledFrame: 'bypass', quiet: true })
   installMockControl()
+  setApiReady()
+  // Sinal para os testes que chamam a API simulada direto (fetch) sem passar pela tela
+  document.documentElement.dataset.mocks = 'ready'
   // Inspeção do cache para os testes de isolamento entre usuários (só na demo com mocks)
   window.__kurioDebug = {
     cachedQueryKeys: () =>
@@ -72,13 +81,13 @@ async function enableMocks(): Promise<ComponentType | null> {
   return MockPanel
 }
 
-enableMocks().then((MockPanel) => {
-  ReactDOM.createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-        {MockPanel && <MockPanel />}
-      </QueryClientProvider>
-    </StrictMode>,
-  )
-})
+// Desenha a aplicação sem esperar os mocks (primeira pintura mais cedo)
+const mockPanel = enableMocks()
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+      <MockPanelSlot panel={mockPanel} />
+    </QueryClientProvider>
+  </StrictMode>,
+)

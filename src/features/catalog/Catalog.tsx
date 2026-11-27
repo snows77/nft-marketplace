@@ -41,6 +41,8 @@ export function Catalog({ search, onFilter, onPage, sidebarExtra }: Props) {
 
   return (
     <section id="catalogo" aria-label="Catálogo" className="scroll-mt-6 py-6">
+      {/* Título da seção (visível só para leitor de tela): mantém a hierarquia h1 → h2 → h3 dos cards */}
+      <h2 className="sr-only">Catálogo de NFTs</h2>
       <div className="grid gap-8 lg:grid-cols-[310px_1fr]">
         <div className="hidden space-y-6 lg:block">
           <aside aria-label="Filtros" className="bg-card p-5">

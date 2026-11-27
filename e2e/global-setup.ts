@@ -18,7 +18,7 @@ export default async function globalSetup(config: FullConfig) {
 
   try {
     await page.goto(baseURL)
-    await page.getByRole('link', { name: 'Pular para o conteúdo' }).waitFor({ state: 'attached', timeout: 60_000 })
+    await page.locator('html[data-mocks="ready"]').waitFor({ state: 'attached', timeout: 60_000 })
   } catch (err) {
     const hints = [
       `O app em ${baseURL} não carregou. Erros capturados no navegador:`,

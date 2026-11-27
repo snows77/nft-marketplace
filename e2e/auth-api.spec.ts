@@ -25,7 +25,8 @@ const ana = { email: 'ana@kurio.dev', password: 'Kurio@123' }
 test.beforeEach(async ({ page }) => {
   await withScenario(page, { latency: 'none' })
   await page.goto('/')
-  await expect(page.getByRole('link', { name: 'Pular para o conteúdo' })).toBeAttached()
+  // A API simulada liga depois da primeira pintura: espera o sinal de pronta
+  await expect(page.locator('html[data-mocks="ready"]')).toBeAttached()
 })
 
 test('login com credenciais corretas devolve a sessão', async ({ page }) => {

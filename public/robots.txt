@@ -1,0 +1,3 @@
+# Demo pública do desafio: pode ser indexada
+User-agent: *
+Allow: /

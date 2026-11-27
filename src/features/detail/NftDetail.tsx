@@ -69,11 +69,12 @@ export function NftDetail({ nft }: { nft: Nft }) {
         <div className="min-w-0 rounded-t-3xl bg-card px-4 py-6 md:bg-transparent md:p-0">
           <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
             <h1 id="nft-titulo" className="text-title font-bold md:text-heading">{title}</h1>
-            <p
-              className="flex items-center gap-1 rounded-full border border-primary px-2 py-0.5 text-caption md:border-0"
-              aria-label={`Avaliação ${nft.rating.toFixed(1)} de 5, ${nft.reviewCount} avaliações de colecionadores`}
-            >
+            {/* aria-label não é permitido num <p>: o texto para leitor de tela vai num sr-only */}
+            <p className="flex items-center gap-1 rounded-full border border-primary px-2 py-0.5 text-caption md:border-0">
               <Star className="size-3.5 fill-current text-primary" aria-hidden="true" />
+              <span className="sr-only">
+                Avaliação {nft.rating.toFixed(1)} de 5, {nft.reviewCount} avaliações de colecionadores
+              </span>
               <span aria-hidden="true">
                 {nft.rating.toFixed(1)} ({nft.reviewCount})
               </span>

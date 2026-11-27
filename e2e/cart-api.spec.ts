@@ -33,7 +33,8 @@ const EMERALD_50 = { nftId: 'nft-001', editionId: 'nft-001-1of50' }
 test.beforeEach(async ({ page }) => {
   await withScenario(page, { latency: 'none' })
   await page.goto('/')
-  await expect(page.getByRole('link', { name: 'Pular para o conteúdo' })).toBeAttached()
+  // A API simulada liga depois da primeira pintura: espera o sinal de pronta
+  await expect(page.locator('html[data-mocks="ready"]')).toBeAttached()
 })
 
 test('visitante adiciona, soma e calcula os totais', async ({ page }) => {
