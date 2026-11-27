@@ -16,6 +16,7 @@ export const apiErrorSchema = z.object({
     'OUT_OF_STOCK',
     'PRICE_CHANGED',
     'IDEMPOTENCY_CONFLICT',
+    'ORDER_PENDING',
     'TRANSIENT_ERROR',
   ]),
   message: z.string(),

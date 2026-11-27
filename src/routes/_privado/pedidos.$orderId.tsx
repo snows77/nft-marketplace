@@ -2,6 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { MailCheck } from 'lucide-react'
 import { fetchOrder } from '@/api/orders'
+import { isAwaitingConfirmation } from '@/features/checkout/useCheckout'
 import { ApiRequestError } from '@/api/errors'
 import { Container } from '@/components/layout/Container'
 import { NETWORK_LABELS, PROVIDER_LABELS, shortAddress } from '@/contracts/wallet'
@@ -21,7 +22,7 @@ function ReceiptPage() {
   const order = useQuery({
     queryKey: ['order', orderId],
     queryFn: ({ signal }) => fetchOrder(orderId, signal),
-    refetchInterval: (query) => (query.state.data?.status === 'pendente' ? 1000 : false),
+    refetchInterval: (query) => (isAwaitingConfirmation(query.state.data) ? 1000 : false),
   })
 
   if (order.isPending) {
@@ -53,12 +54,13 @@ function ReceiptPage() {
   }
 
   const data = order.data
-  if (data.status !== 'confirmado') {
+  // Só mostra o recibo com a confirmação completa da API (inclui a transação)
+  if (data.status !== 'confirmado' || !data.transactionHash) {
     return (
       <Container className="py-12">
         <div role="status" className="mx-auto max-w-md space-y-3 rounded bg-card p-8 text-center">
           <p className="text-title font-bold">
-            {data.status === 'pendente' ? 'Aguardando confirmação na rede…' : 'Pagamento não concluído'}
+            {data.status === 'recusado' ? 'Pagamento não concluído' : 'Aguardando confirmação na rede…'}
           </p>
           {data.failureReason && <p>{data.failureReason}</p>}
           <Link to="/carrinho" className="text-primary underline">

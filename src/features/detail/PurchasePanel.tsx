@@ -15,14 +15,19 @@ const stepButton =
 // da edição escolhida; edições com disponível 0 aparecem desabilitadas ("Esgotada").
 export function PurchasePanel({ nft, summary }: { nft: Nft; summary: NftSummary }) {
   const firstAvailable = nft.editions.find((edition) => edition.available > 0)
-  const [editionId, setEditionId] = useState(firstAvailable?.id ?? null)
-  const [quantity, setQuantity] = useState(1)
+  const [chosenEditionId, setEditionId] = useState<string | null>(null)
+  const [chosenQuantity, setQuantity] = useState(1)
   const legendId = useId()
   const addToCartMutation = useAddToCart()
   const navigate = useNavigate()
 
-  const edition = nft.editions.find((e) => e.id === editionId) ?? null
+  // Derivado dos dados atuais (que o tempo real atualiza): se a edição escolhida esgotar,
+  // vale a próxima disponível; a quantidade nunca passa do disponível da edição.
+  const chosen = nft.editions.find((e) => e.id === chosenEditionId && e.available > 0)
+  const edition = chosen ?? firstAvailable ?? null
+  const editionId = edition?.id ?? null
   const max = edition?.available ?? 0
+  const quantity = Math.max(1, Math.min(chosenQuantity, max))
   const soldOut = edition === null
   const atMax = !soldOut && quantity >= max
 
@@ -100,7 +105,7 @@ export function PurchasePanel({ nft, summary }: { nft: Nft; summary: NftSummary 
             aria-label="Diminuir quantidade"
             className={stepButton}
             disabled={soldOut || quantity <= 1}
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+            onClick={() => setQuantity(Math.max(1, quantity - 1))}
           >
             <Minus className="size-4" aria-hidden="true" />
           </button>
@@ -117,7 +122,7 @@ export function PurchasePanel({ nft, summary }: { nft: Nft; summary: NftSummary 
             aria-label="Aumentar quantidade"
             className={stepButton}
             disabled={soldOut || atMax}
-            onClick={() => setQuantity((q) => Math.min(max, q + 1))}
+            onClick={() => setQuantity(Math.min(max, quantity + 1))}
           >
             <Plus className="size-4" aria-hidden="true" />
           </button>

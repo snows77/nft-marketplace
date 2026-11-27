@@ -194,6 +194,22 @@ export function resumePendingSettlements(): void {
     .forEach(scheduleSettlement)
 }
 
+// Um pedido por vez: enquanto houver um pendente, nada de nova cotação ou novo pedido.
+// Evita duas compras do mesmo carrinho (outra aba, ou nova revisão depois de um timeout).
+function pendingOrderConflict(userId: string): Response | null {
+  settleDueOrders()
+  const pending = store().orders.find((o) => o.userId === userId && o.status === 'pendente')
+  if (!pending) return null
+  return HttpResponse.json(
+    {
+      code: 'ORDER_PENDING',
+      message: 'Você já tem um pedido em processamento. Acompanhe a confirmação dele.',
+      orderId: pending.id,
+    },
+    { status: 409 },
+  )
+}
+
 export const orderHandlers = [
   // Simulação de conexão da carteira cadastrada (aceita ou recusa conforme o cenário)
   http.post('/api/wallets/connect', async ({ request }) => {
@@ -211,6 +227,8 @@ export const orderHandlers = [
   http.post('/api/checkout/quote', ({ request }) => {
     const session = requireSession(request)
     if (session instanceof Response) return session
+    const pending = pendingOrderConflict(session.user.id)
+    if (pending) return pending
     const quote = buildQuote(session.user.id)
     if (quote instanceof Response) return quote
     saveDb()
@@ -240,6 +258,9 @@ export const orderHandlers = [
       const existing = db.orders.find((o) => o.id === previous.orderId)!
       return HttpResponse.json(publicOrder(existing))
     }
+
+    const pending = pendingOrderConflict(userId)
+    if (pending) return pending
 
     const parsed = createOrderInputSchema.safeParse(JSON.parse(raw || 'null'))
     if (!parsed.success) return validationError(parsed.error)

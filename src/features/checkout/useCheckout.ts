@@ -4,7 +4,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { connectWallet, createOrder, createQuote, fetchOrder } from '@/api/orders'
 import { ApiRequestError } from '@/api/errors'
 import { cartKeys } from '@/api/queryKeys'
-import { staleQuoteSchema, type Buyer, type Payment, type Quote } from '@/contracts/order'
+import { staleQuoteSchema, type Buyer, type Order, type Payment, type Quote } from '@/contracts/order'
 import type { WalletSlot } from '@/contracts/wallet'
 import { useSocketEvent } from '@/features/realtime/useSocketEvent'
 import { attemptFor, loadAttempt, saveAttempt } from './attempt'
@@ -12,6 +12,10 @@ import { attemptFor, loadAttempt, saveAttempt } from './attempt'
 export type Connection = { state: 'desconectada' | 'conectando' | 'conectada' } | { state: 'erro'; message: string }
 
 const orderKey = (orderId: string | undefined) => ['order', orderId ?? 'nenhum'] as const
+
+// Pendente, ou "confirmado" sem a transação ainda (evento chegou antes do REST)
+export const isAwaitingConfirmation = (order: Order | undefined) =>
+  !!order && (order.status === 'pendente' || (order.status === 'confirmado' && !order.transactionHash))
 
 // Fluxo do checkout: conectar carteira → revisar (cotação) → confirmar (pedido idempotente)
 // → acompanhar o pendente até confirmado/recusado. Toda regra de negócio fica na API.
@@ -35,11 +39,23 @@ export function useCheckout(userId: string) {
       }),
   })
 
+  // Já existe um pedido em processamento (outra aba, ou revisão depois de um timeout):
+  // a API recusa outro e devolve o id; o checkout passa a acompanhar esse pedido
+  function resumePendingOrder(err: unknown): boolean {
+    if (!(err instanceof ApiRequestError) || err.code !== 'ORDER_PENDING') return false
+    const pendingId = (err.details as { orderId?: string } | undefined)?.orderId
+    if (!pendingId) return false
+    saveAttempt(userId, { key: crypto.randomUUID(), quoteId: '', orderId: pendingId })
+    setOrderId(pendingId)
+    return true
+  }
+
   const review = useMutation({
     mutationFn: createQuote,
     onMutate: () => setNotice(null),
     onSuccess: (q) => setQuote(q),
     onError: (err) => {
+      if (resumePendingOrder(err)) return
       const stale = staleQuoteSchema.safeParse(err instanceof ApiRequestError ? err.details : null)
       if (stale.success) setQuote(stale.data.quote)
       setNotice(err instanceof ApiRequestError ? err.message : 'Não foi possível gerar a cotação.')
@@ -67,6 +83,7 @@ export function useCheckout(userId: string) {
       setOrderId(order.id)
     },
     onError: (err) => {
+      if (resumePendingOrder(err)) return
       if (!(err instanceof ApiRequestError)) return setNotice('Não foi possível enviar o pedido.')
       // Valores mudaram: mostra a cotação nova e exige nova confirmação (nova tentativa)
       const stale = staleQuoteSchema.safeParse(err.details)
@@ -100,17 +117,20 @@ export function useCheckout(userId: string) {
     queryKey: orderKey(orderId),
     queryFn: ({ signal }) => fetchOrder(orderId!, signal),
     enabled: !!orderId,
-    refetchInterval: (query) => (query.state.data?.status === 'pendente' ? 1000 : false),
+    // Continua consultando até a confirmação chegar completa (com a transação): um evento
+    // pode marcar "confirmado" no cache antes de o REST trazer o hash
+    refetchInterval: (query) => (isAwaitingConfirmation(query.state.data) ? 1000 : false),
   })
 
+  const confirmed = order.data?.status === 'confirmado' && !!order.data.transactionHash
   const status = order.data?.status
   useEffect(() => {
-    if (status !== 'confirmado' || !orderId) return
+    if (!confirmed || !orderId) return
     // Pedido confirmado: encerra a tentativa, atualiza o carrinho e mostra o recibo
     saveAttempt(userId, null)
     void queryClient.invalidateQueries({ queryKey: cartKeys.detail(userId) })
     void navigate({ to: '/pedidos/$orderId', params: { orderId }, replace: true })
-  }, [status, orderId, userId, queryClient, navigate])
+  }, [confirmed, orderId, userId, queryClient, navigate])
 
   function acknowledgeRefusal() {
     saveAttempt(userId, null)
@@ -129,7 +149,7 @@ export function useCheckout(userId: string) {
     notice,
     order: order.data,
     orderError: order.error,
-    pending: !!orderId && (order.isPending || status === 'pendente'),
+    pending: !!orderId && (order.isPending || isAwaitingConfirmation(order.data)),
     refused: status === 'recusado',
     acknowledgeRefusal,
   }

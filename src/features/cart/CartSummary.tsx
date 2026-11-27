@@ -130,7 +130,7 @@ function CouponForm({ cart }: { cart: Cart }) {
         </button>
       </div>
       {error && (
-        <p id={errorId} className="text-caption text-coral">
+        <p id={errorId} role="alert" className="text-caption text-coral">
           {error}
         </p>
       )}

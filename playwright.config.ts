@@ -16,6 +16,9 @@ export default defineConfig({
   // 10s (padrão 5s): com a máquina ocupada (dois servidores/navegadores) a primeira
   // renderização às vezes passava de 5s; em condição normal nada fica mais lento
   expect: { timeout: 10_000 },
+  // 60s por teste: fluxos completos (login, compra, tempo real) somam muitas navegações e,
+  // com a suíte inteira em paralelo, alguns passavam perto dos 30s padrão
+  timeout: 60_000,
   use: {
     baseURL: EXTERNAL_URL ?? `http://localhost:${PORT}`,
     trace: 'retain-on-failure',

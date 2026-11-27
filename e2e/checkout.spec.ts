@@ -151,3 +151,59 @@ test('recibo de outro usuário não é exibido', async ({ page }) => {
   await page.goto(receiptUrl)
   await expect(page.getByText('Pedido não encontrado.')).toBeVisible()
 })
+
+test('mesma chave com outro conteúdo é recusada (409 IDEMPOTENCY_CONFLICT)', async ({ page }) => {
+  await loginAs(page, ANA)
+  await expect(page.locator('html[data-mocks="ready"]')).toBeAttached()
+  const result = await page.evaluate(async () => {
+    const headers = (key: string) => ({
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('kurio:session-token')}`,
+      'Idempotency-Key': key,
+    })
+    const quote = await (await fetch('/api/checkout/quote', { method: 'POST', headers: headers('-') })).json()
+    const body = (note: string) =>
+      JSON.stringify({
+        quoteId: quote.id,
+        buyer: { displayName: 'Ana', username: 'ana', email: 'ana@kurio.dev', note },
+        payment: { walletSlot: 'principal', network: 'polygon', provider: 'metamask' },
+      })
+    const first = await fetch('/api/orders', { method: 'POST', headers: headers('chave-1'), body: body('a') })
+    const again = await fetch('/api/orders', { method: 'POST', headers: headers('chave-1'), body: body('a') })
+    const other = await fetch('/api/orders', { method: 'POST', headers: headers('chave-1'), body: body('b') })
+    return {
+      first: first.status,
+      sameId: (await first.clone().json()).id === (await again.json()).id,
+      other: other.status,
+      otherCode: (await other.json()).code,
+    }
+  })
+  expect(result.first).toBe(201)
+  expect(result.sameId).toBe(true)
+  expect(result.other).toBe(409)
+  expect(result.otherCode).toBe('IDEMPOTENCY_CONFLICT')
+})
+
+test('com um pedido pendente, outra aba retoma o mesmo pedido em vez de criar outro', async ({ page, context }) => {
+  // Pagamento longo: a segunda aba precisa encontrar o pedido ainda pendente
+  await withScenario(page, { latency: 'none', paymentDelayMs: 30_000 })
+  await loginAs(page, ANA)
+  await goToReview(page)
+  await checkout(page).getByRole('button', { name: 'Confirmar compra' }).click()
+  await expect(checkout(page).getByText('Aguardando confirmação na rede')).toBeVisible()
+
+  // Outra aba (sessionStorage vazio): tenta revisar de novo
+  const other = await context.newPage()
+  await goToReviewOrPending(other)
+  await expect(checkout(other).getByText('Aguardando confirmação na rede')).toBeVisible()
+  expect(await ordersCount(other)).toBe(1)
+})
+
+async function goToReviewOrPending(page: Page) {
+  await page.goto('/checkout')
+  await expect(checkout(page).getByRole('heading', { name: 'Perfil do colecionador' })).toBeVisible()
+  await checkout(page).getByRole('radio', { name: /Reserva/ }).check()
+  await checkout(page).getByRole('button', { name: 'Conectar carteira' }).click()
+  await expect(checkout(page).getByText('Carteira conectada')).toBeVisible()
+  await checkout(page).getByRole('button', { name: 'Revisar pedido' }).click()
+}
