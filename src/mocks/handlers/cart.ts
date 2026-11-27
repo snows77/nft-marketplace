@@ -110,16 +110,21 @@ function checkAvailability(nftId: string, editionId: string, quantity: number): 
   return null
 }
 
-const respond = (cart: DbCart) => {
-  saveDb()
+// Grava o banco só quando algo mudou. Cada aba tem sua cópia em memória: gravar numa
+// leitura poderia sobrescrever, com dados antigos, o que outra aba acabou de salvar
+// (ex.: a sessão de quem acabou de entrar lá).
+const respond = (cart: DbCart, { persist = true }: { persist?: boolean } = {}) => {
+  if (persist) saveDb()
   return HttpResponse.json(toCartResponse(cart))
 }
 
 export const cartHandlers = [
   http.get('/api/cart', ({ request }) => {
+    const before = getDb().carts.length
     const cart = resolveCart(request, { create: true })
     if (cart instanceof Response) return cart
-    return respond(cart!)
+    // Só grava se a leitura criou um carrinho novo
+    return respond(cart!, { persist: getDb().carts.length !== before })
   }),
 
   http.post('/api/cart/items', async ({ request }) => {

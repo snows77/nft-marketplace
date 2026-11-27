@@ -16,10 +16,10 @@ export function NftGrid({ items }: { items: NftSummary[] }) {
   )
 }
 
-export function NftGridSkeleton() {
+export function NftGridSkeleton({ label = 'Carregando NFTs', count = PAGE_SIZE }: { label?: string; count?: number }) {
   return (
-    <div role="status" aria-label="Carregando NFTs" className={gridClass}>
-      {Array.from({ length: PAGE_SIZE }, (_, i) => (
+    <div role="status" aria-label={label} className={gridClass}>
+      {Array.from({ length: count }, (_, i) => (
         <NftCardSkeleton key={i} />
       ))}
     </div>

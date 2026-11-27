@@ -13,7 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrivadoRouteImport } from './routes/_privado'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as PrivadoCarteirasRouteImport } from './routes/_privado/carteiras'
+import { Route as PrivadoFavoritosRouteImport } from './routes/_privado/favoritos'
 import { Route as PrivadoPerfilRouteImport } from './routes/_privado/perfil'
+import { Route as NftNftIdRouteImport } from './routes/nft.$nftId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,23 +36,37 @@ const PrivadoCarteirasRoute = PrivadoCarteirasRouteImport.update({
   path: '/carteiras',
   getParentRoute: () => PrivadoRoute,
 } as any)
+const PrivadoFavoritosRoute = PrivadoFavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
+  getParentRoute: () => PrivadoRoute,
+} as any)
 const PrivadoPerfilRoute = PrivadoPerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
   getParentRoute: () => PrivadoRoute,
+} as any)
+const NftNftIdRoute = NftNftIdRouteImport.update({
+  id: '/nft/$nftId',
+  path: '/nft/$nftId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/carrinho': typeof CarrinhoRoute
   '/carteiras': typeof PrivadoCarteirasRoute
+  '/favoritos': typeof PrivadoFavoritosRoute
   '/perfil': typeof PrivadoPerfilRoute
+  '/nft/$nftId': typeof NftNftIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/carrinho': typeof CarrinhoRoute
   '/carteiras': typeof PrivadoCarteirasRoute
+  '/favoritos': typeof PrivadoFavoritosRoute
   '/perfil': typeof PrivadoPerfilRoute
+  '/nft/$nftId': typeof NftNftIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -58,26 +74,33 @@ export interface FileRoutesById {
   '/_privado': typeof PrivadoRouteWithChildren
   '/carrinho': typeof CarrinhoRoute
   '/_privado/carteiras': typeof PrivadoCarteirasRoute
+  '/_privado/favoritos': typeof PrivadoFavoritosRoute
   '/_privado/perfil': typeof PrivadoPerfilRoute
+  '/nft/$nftId': typeof NftNftIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/carrinho' | '/carteiras' | '/perfil'
+  fullPaths:
+    '/' | '/carrinho' | '/carteiras' | '/favoritos' | '/perfil' | '/nft/$nftId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/carrinho' | '/carteiras' | '/perfil'
+  to:
+    '/' | '/carrinho' | '/carteiras' | '/favoritos' | '/perfil' | '/nft/$nftId'
   id:
     | '__root__'
     | '/'
     | '/_privado'
     | '/carrinho'
     | '/_privado/carteiras'
+    | '/_privado/favoritos'
     | '/_privado/perfil'
+    | '/nft/$nftId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PrivadoRoute: typeof PrivadoRouteWithChildren
   CarrinhoRoute: typeof CarrinhoRoute
+  NftNftIdRoute: typeof NftNftIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -110,6 +133,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivadoCarteirasRouteImport
       parentRoute: typeof PrivadoRoute
     }
+    '/_privado/favoritos': {
+      id: '/_privado/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof PrivadoFavoritosRouteImport
+      parentRoute: typeof PrivadoRoute
+    }
     '/_privado/perfil': {
       id: '/_privado/perfil'
       path: '/perfil'
@@ -117,16 +147,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivadoPerfilRouteImport
       parentRoute: typeof PrivadoRoute
     }
+    '/nft/$nftId': {
+      id: '/nft/$nftId'
+      path: '/nft/$nftId'
+      fullPath: '/nft/$nftId'
+      preLoaderRoute: typeof NftNftIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface PrivadoRouteChildren {
   PrivadoCarteirasRoute: typeof PrivadoCarteirasRoute
+  PrivadoFavoritosRoute: typeof PrivadoFavoritosRoute
   PrivadoPerfilRoute: typeof PrivadoPerfilRoute
 }
 
 const PrivadoRouteChildren: PrivadoRouteChildren = {
   PrivadoCarteirasRoute: PrivadoCarteirasRoute,
+  PrivadoFavoritosRoute: PrivadoFavoritosRoute,
   PrivadoPerfilRoute: PrivadoPerfilRoute,
 }
 
@@ -137,6 +176,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PrivadoRoute: PrivadoRouteWithChildren,
   CarrinhoRoute: CarrinhoRoute,
+  NftNftIdRoute: NftNftIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

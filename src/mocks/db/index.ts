@@ -6,7 +6,7 @@ import { buildCarts, type DbCart } from './fixtures/carts'
 
 // Troque o número da versão sempre que mudar as fixtures,
 // senão o navegador continua usando os dados antigos salvos.
-export const STORAGE_KEY = 'kurio:mock-db:v6'
+export const STORAGE_KEY = 'kurio:mock-db:v7'
 
 export interface DbSession {
   token: string
@@ -20,10 +20,19 @@ interface MockDbState {
   sessions: DbSession[]
   wallets: DbWallet[]
   carts: DbCart[]
+  // Favoritos por usuário: userId -> ids dos NFTs (mais recente primeiro)
+  favorites: Record<string, string[]>
 }
 
 function seed(): MockDbState {
-  return { nfts: buildNfts(), users: buildUsers(), sessions: [], wallets: buildWallets(), carts: buildCarts() }
+  return {
+    nfts: buildNfts(),
+    users: buildUsers(),
+    sessions: [],
+    wallets: buildWallets(),
+    carts: buildCarts(),
+    favorites: {},
+  }
 }
 
 function load(): MockDbState {
