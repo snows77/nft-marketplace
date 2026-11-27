@@ -72,3 +72,14 @@ test('diário da cunhagem: ler mais avisa que é fora da demo', async ({ page })
   await journal.getByRole('button', { name: /Ler mais/ }).first().click()
   await expect(page.getByText('Esta seção não faz parte da demonstração.')).toBeVisible()
 })
+
+test('botão de pausa para a rotação do carrossel', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/')
+  await expect(hero(page).getByRole('group', { name: '1 de 3' })).toBeVisible()
+  await hero(page).getByRole('button', { name: 'Pausar rotação' }).click()
+  await expect(hero(page).getByRole('button', { name: 'Retomar rotação' })).toBeVisible()
+  await page.mouse.move(0, 0) // tira o mouse de cima: a pausa precisa continuar
+  await page.waitForTimeout(7000)
+  await expect(hero(page).getByRole('group', { name: '1 de 3' })).toBeVisible()
+})

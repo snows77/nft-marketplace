@@ -120,3 +120,28 @@ test('paginação avança e mantém filtros', async ({ page }) => {
   await expect(page).toHaveURL(/page=2/)
   await expect(page).toHaveURL(/network=ethereum/)
 })
+
+test('buscar com Enter mantém o foco no campo', async ({ page }) => {
+  await page.goto('/')
+  const search = catalog(page).getByRole('searchbox', { name: 'Buscar NFTs' })
+  await search.fill('golden')
+  await search.press('Enter')
+  await expect(page).toHaveURL(/q=golden/)
+  await expect(search).toBeFocused()
+})
+
+test('ids dos filtros não se repetem na página', async ({ page }) => {
+  await page.goto('/')
+  await expect(cardLinks(page).first()).toBeVisible()
+  // Com a gaveta aberta, barra lateral (oculta) e gaveta renderizam os mesmos filtros
+  const drawerButton = page.getByRole('button', { name: /^Filtros/ })
+  if (await drawerButton.isVisible()) {
+    await drawerButton.click()
+    await expect(page.getByRole('dialog', { name: 'Filtros' })).toBeVisible()
+  }
+  const duplicated = await page.evaluate(() => {
+    const ids = [...document.querySelectorAll('[id]')].map((el) => el.id)
+    return ids.filter((id, i) => ids.indexOf(id) !== i)
+  })
+  expect(duplicated).toEqual([])
+})

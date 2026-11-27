@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Pause, Play } from 'lucide-react'
 import type { NftSummary } from '@/contracts/nft'
 import { formatTokenNumber } from '@/lib/format'
 import { srcSetFor } from '@/lib/images'
@@ -12,21 +12,27 @@ const AUTOPLAY_MS = 6000
 const FALLBACK = { image: '/images/nfts/emerald-ape.webp', alt: 'Emerald Ape #042' }
 
 // Hero do Figma: chamada + imagem do NFT destacado + 3 bolinhas.
-// Carrossel acessível: slides nomeados "N de 3", bolinhas com nome, autoplay pausado
-// em hover/foco e desligado quando a pessoa prefere menos movimento.
+// Carrossel acessível (padrão ARIA + WCAG 2.2.2): botão de pausar/retomar como primeiro
+// controle, slides nomeados "N de 3", bolinhas com nome, rotação pausada em hover/foco
+// e desligada quando a pessoa prefere menos movimento.
 export function HeroCarousel({ items }: { items: NftSummary[] | undefined }) {
   const slides = (items ?? []).slice(0, 3)
   const total = Math.max(slides.length, 1)
   const [index, setIndex] = useState(0)
-  const [paused, setPaused] = useState(false)
+  // Três motivos independentes para pausar: o botão, o mouse em cima e o foco dentro
+  const [stoppedByUser, setStoppedByUser] = useState(false)
+  const [hovered, setHovered] = useState(false)
+  const [focused, setFocused] = useState(false)
   const reducedMotion = useReducedMotion()
   const current = slides[index % total]
+  const canRotate = !reducedMotion && slides.length > 1
+  const rotating = canRotate && !stoppedByUser && !hovered && !focused
 
   useEffect(() => {
-    if (reducedMotion || paused || slides.length < 2) return
+    if (!rotating) return
     const timer = window.setInterval(() => setIndex((i) => (i + 1) % slides.length), AUTOPLAY_MS)
     return () => window.clearInterval(timer)
-  }, [reducedMotion, paused, slides.length])
+  }, [rotating, slides.length])
 
   const image = current?.image ?? FALLBACK.image
   const alt = current ? `${current.name} ${formatTokenNumber(current.tokenNumber)}` : FALLBACK.alt
@@ -35,16 +41,31 @@ export function HeroCarousel({ items }: { items: NftSummary[] | undefined }) {
     <section
       aria-roledescription="carrossel"
       aria-label="Destaques"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={() => setPaused(false)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocus={() => setFocused(true)}
+      onBlur={(e) => {
+        // Só "desfoca" quando o foco sai do carrossel inteiro
+        if (!e.currentTarget.contains(e.relatedTarget)) setFocused(false)
+      }}
       className="relative mt-6 overflow-hidden rounded-3xl bg-gradient-to-br from-surface-dark to-card p-5 md:mt-8 md:bg-none md:p-0"
     >
+      {canRotate && (
+        <button
+          type="button"
+          onClick={() => setStoppedByUser((v) => !v)}
+          className="absolute top-3 right-3 z-10 flex size-8 items-center justify-center rounded-full bg-background/70 text-primary hover:bg-background md:top-4 md:right-4"
+          aria-label={stoppedByUser ? 'Retomar rotação' : 'Pausar rotação'}
+        >
+          {stoppedByUser ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
+        </button>
+      )}
       <div
         role="group"
         aria-roledescription="slide"
         aria-label={`${(index % total) + 1} de ${total}`}
+        // Parado, a troca de slide é anunciada; girando sozinho, não (seria ruído)
+        aria-live={rotating ? 'off' : 'polite'}
         className="grid grid-cols-[1fr_auto] items-center gap-4 md:grid-cols-[1fr_450px] md:gap-10"
       >
         <div className="md:pl-10">

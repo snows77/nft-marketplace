@@ -51,7 +51,7 @@ export function Catalog({ search, onFilter, onPage, sidebarExtra }: Props) {
 
         <div className="min-w-0 space-y-6">
           <div className="flex gap-3">
-            <SearchBox key={search.q ?? ''} value={search.q} onSearch={(q) => onFilter({ q })} />
+            <SearchBox value={search.q} onSearch={(q) => onFilter({ q })} />
             <FilterDrawer
               search={search}
               facets={data?.facets}

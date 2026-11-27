@@ -9,9 +9,16 @@ interface Props {
 }
 
 // Campo "Explorar coleções" (Figma mobile). Aplica ao pressionar Enter ou o botão.
-// Quem usa passa key={q}: quando a URL muda (ex.: voltar no histórico) o campo recomeça.
 export function SearchBox({ value, onSearch }: Props) {
   const [text, setText] = useState(value ?? '')
+  // Quando a URL muda por fora (voltar no histórico, "Limpar tudo"), o texto acompanha.
+  // Ajuste durante a renderização (padrão do React) em vez de recriar o campo, que
+  // faria o foco do teclado se perder.
+  const [lastValue, setLastValue] = useState(value)
+  if (value !== lastValue) {
+    setLastValue(value)
+    setText(value ?? '')
+  }
 
   return (
     <form

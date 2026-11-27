@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import Decimal from 'decimal.js'
 import type { NftListResponse } from '@/contracts/nft'
 import type { NftSearch } from '@/contracts/nft-search'
@@ -21,10 +21,12 @@ const optionClass =
 // Conteúdo dos filtros (Figma): Coleções, Faixa de preço e Rede.
 // Usado na barra lateral (desktop) e na gaveta (mobile).
 export function CatalogFilters({ search, facets, onChange }: Props) {
+  // ids únicos: barra lateral e gaveta podem estar na página ao mesmo tempo
+  const id = useId()
   return (
     <div className="space-y-8">
-      <section aria-labelledby="filtro-colecoes">
-        <h2 id="filtro-colecoes" className={groupTitle}>
+      <section aria-labelledby={`${id}-colecoes`}>
+        <h2 id={`${id}-colecoes`} className={groupTitle}>
           Coleções
         </h2>
         <ul className="space-y-1">
@@ -49,8 +51,8 @@ export function CatalogFilters({ search, facets, onChange }: Props) {
 
       {facets && <PriceRange search={search} range={facets.priceRange} onChange={onChange} />}
 
-      <section aria-labelledby="filtro-rede">
-        <h2 id="filtro-rede" className={groupTitle}>
+      <section aria-labelledby={`${id}-rede`}>
+        <h2 id={`${id}-rede`} className={groupTitle}>
           Rede
         </h2>
         <ul className="space-y-1">
@@ -97,11 +99,12 @@ function PriceRange({
   ]
   // Estado local: arrastar não dispara busca; só "Aplicar"
   const [draft, setDraft] = useState<[number, number] | null>(null)
+  const id = useId()
   const value = draft ?? current
 
   return (
-    <section aria-labelledby="filtro-preco">
-      <h2 id="filtro-preco" className={groupTitle}>
+    <section aria-labelledby={`${id}-preco`}>
+      <h2 id={`${id}-preco`} className={groupTitle}>
         Faixa de preço
       </h2>
       <div className="space-y-4 px-3">
